@@ -2,6 +2,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+// import jwt from "jsonwebtoken";
+// import User from "../models/User.js";
+import { sendOtpSms } from "../utils/otpHelper.js";
+
 const createToken = (user) => {
   return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
@@ -51,4 +55,47 @@ export const getMe = async (req, res) => {
 export const logoutUser = async (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
+};
+
+
+
+
+
+
+let otpStore = {}; // should use Redis in production
+
+// send otp
+export const sendOtp = async (req, res) => {
+  const { mobile } = req.body;
+  if (!mobile) return res.status(400).json({ message: "Mobile required" });
+
+ // const otp = Math.floor(100000 + Math.random() * 900000); // 6 digits
+   const otp = Math.floor(1000 + Math.random() * 9000); // 4 digits
+  otpStore[mobile] = otp;
+
+  await sendOtpSms(mobile, otp); // Twilio SMS
+  // console.log(OTP for ${mobile}: ${otp});
+  console.log(`OTP for ${mobile}: ${otp}`)
+
+  res.json({ message: "OTP sent successfully" });
+};
+
+// verify otp
+export const verifyOtp = async (req, res) => {
+  const { mobile, otp } = req.body;
+  if (otpStore[mobile] && otpStore[mobile] == otp) {
+    let user = await User.findOne({ mobile });
+    if (!user) user = await User.create({ mobile });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.cookie("token", token, { httpOnly: true, secure: false });
+    delete otpStore[mobile];
+
+    return res.json({ message: "Login successful", token });
+  } else {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
 };

@@ -5,6 +5,15 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 // const express = require("express");
+
+
+
+
+import bodyParser from "body-parser";
+// import connectDB from "./config/db.js";
+// import authRoutes from "./routes/authRoutes.js";
+
+
 dotenv.config();
 connectDB();
 
@@ -20,3 +29,42 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 
 app.listen(process.env.PORT, () => console.log(`Server running on http://localhost:${process.env.PORT}`));
+
+
+
+// middlewares
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
+
+// routes
+app.use("/api/auth", authRoutes);
+
+app.listen(5000, () => console.log("✅ Server running on port 5000"));
+
+
+
+
+
+// import express from "express";
+// import cors from "cors";
+// import dotenv from "dotenv";
+// import cookieParser from "cookie-parser";
+// import bodyParser from "body-parser";
+// import connectDB from "./config/db.js";
+// import authRoutes from "./routes/authRoutes.js";
+
+// dotenv.config();
+// connectDB();
+
+// const app = express();
+
+// // middlewares
+// app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// app.use(bodyParser.json());
+// app.use(cookieParser());
+
+// // routes
+// app.use("/api/auth", authRoutes);
+
+// app.listen(5000, () => console.log("✅ Server running on port 5000"));
