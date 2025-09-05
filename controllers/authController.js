@@ -2,23 +2,21 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// import jwt from "jsonwebtoken";
-// import User from "../models/User.js";
 import { sendOtpSms } from "../utils/otpHelper.js";
 
 const createToken = (user) => {
-  return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ id: user._id, email: user.email,mobile:user.mobile }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password,mobile } = req.body;
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ error: "Email already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashed });
-    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email } });
+    const user = await User.create({ name, email, password: hashed ,mobile});
+    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email,mobile:user.mobile } });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -58,10 +56,6 @@ export const logoutUser = async (req, res) => {
 };
 
 
-
-
-
-
 let otpStore = {}; // should use Redis in production
 
 // send otp
@@ -74,7 +68,6 @@ export const sendOtp = async (req, res) => {
   otpStore[mobile] = otp;
 
   await sendOtpSms(mobile, otp); // Twilio SMS
-  // console.log(OTP for ${mobile}: ${otp});
   console.log(`OTP for ${mobile}: ${otp}`)
 
   res.json({ message: "OTP sent successfully" });
