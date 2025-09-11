@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import propertyRoutes from './routes/propertyRoutes.js'
+
 // const express = require("express");
 
 
@@ -27,6 +29,7 @@ app.use(cors({
 }));
 
 app.use("/api/auth", authRoutes);
+app.use("/property", propertyRoutes);
 
 app.listen(process.env.PORT, () => console.log(`Server running on http://localhost:${process.env.PORT}`));
 
