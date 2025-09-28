@@ -53,7 +53,24 @@ export const loginUser = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
-  res.json({ id: req.user.id, email: req.user.email });
+  try{
+    const token = req.cookies.token;
+    if(!token) return res.status(401).json({message:"Not authenticated"});
+
+    const user = jwt.verify(token,process.env.JWT_SECRET);
+    if(!user) return res.status(401).json({message:"Invalid token"});
+
+    
+    const usedetails = await User.findById(user.user_id).select("-password");
+    if(!usedetails) return res.status(401).json({message:"User not found"});
+    console.log(usedetails);
+    
+
+    res.status(200).json({usedetails});
+  }catch(error){
+    console.error("getMe error:", error.message);
+    res.status(500).json({message:"Server error",error});
+  }
 };
 
 export const logoutUser = async (req, res) => {
