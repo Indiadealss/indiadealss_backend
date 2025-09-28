@@ -25,6 +25,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type','Authorization'],
 }));
 
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 
 // routes
 app.use("/api/auth", authRoutes);
