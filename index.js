@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 // routes
 app.use("/api/auth", authRoutes);
-app.use("/property", propertyRoutes);
+app.use("/api/property", propertyRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
