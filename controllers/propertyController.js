@@ -1,27 +1,43 @@
+import mongoose from "mongoose";
 import Property from '../models/Property.js';
 
-// export const createProperty = (req, res) => {
-    
-//   res.send("Property created");
-// };
-
-// Create property
 export const createProperty = async (req, res) => {
   try {
-    // const { title, description, price, address, images } = req.body;
-    const {images,title,description,purpose,propertyType,status,area,bathroom,bedrooms,otherrooms,furnishing,balconies,floor, location,price,deposit,size,amenties,heighlights,coveredparking,uncoverdedparking} = req.body;
 
-    // 'await' can only be used inside async functions
-   // const property = await Property.create({ title, description, price, address, images });
-    const property = await Property.create({ images,title,description,purpose,propertyType,status,area,bathroom,bedrooms,otherrooms,furnishing,balconies,floor, location,price,deposit,size,amenties,heighlights,coveredparking,uncoverdedparking });
+   
 
-    res.status(201).json({
-      success: true,
-      property
+    const { owner, location, ...propertyData } = req.body;
+
+    if (!owner || !mongoose.Types.ObjectId.isValid(owner)) {
+      return res.status(400).json({ success: false, message: "Valid owner ID is required" });
+    }
+
+    if (!location) {
+      return res.status(400).json({ success: false, message: "Location is required" });
+    }
+
+    // Map images if uploaded
+    if (req.files && req.files.images) {
+      propertyData.images = req.files.images.map((file) => ({ src: file.location }));
+    }
+
+    // Map videos if uploaded
+    if (req.files && req.files.video) {
+      propertyData.video = req.files.video.map((file) => ({ src: file.location }));
+    }
+
+    const formattedLocation = Array.isArray(location) ? location[0] : location;
+
+    const property = await Property.create({
+      owner,
+      location: formattedLocation,
+      ...propertyData,
     });
+
+    res.status(201).json({ success: true, property });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Server Error' });
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };
 
