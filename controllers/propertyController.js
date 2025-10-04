@@ -19,11 +19,17 @@ export const createProperty = async (req, res) => {
     // Map images if uploaded
     if (req.files && req.files.images) {
       propertyData.images = req.files.images.map((file) => ({ src: file.location }));
+    }else{
+      // No image uploaded
+      propertyData.images = [{src:'No image uploaded'}];
     }
 
     // Map videos if uploaded
     if (req.files && req.files.video) {
       propertyData.video = req.files.video.map((file) => ({ src: file.location }));
+    }else{
+      // No video uploaded
+      propertyData.images = [{src:'No image uploaded'}]
     }
 
     const formattedLocation = Array.isArray(location) ? location[0] : location;

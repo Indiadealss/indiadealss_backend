@@ -35,6 +35,7 @@ const PropertySchema = new mongoose.Schema({
     },
     images:{
         type:[imagesSchema],
+        default:'Images are not uploaded',
         required:false,
     },
     owners_type:{
