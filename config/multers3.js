@@ -22,7 +22,8 @@ const upload = multer({
     storage: multerS3({
         s3,
         bucket: process.env.S3_BUCKET_NAME,
-        acl:"public-read", // so URL is accessible
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        // acl:"public-read", // so URL is accessible
         metadata: function (req,file,cb){
             cb(null,{filedName:file.fieldname});
         },
