@@ -54,8 +54,27 @@ export const createProperty = async (req, res) => {
 
 export const getAllProperties = async (req, res) => {
   try {
-    const properties = await Property.find(); // fetch all
-    res.status(200).json(properties);
+    //Get queary params from frontend
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.page) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const properties = await Property.find()
+    .populate("owner","name mobile email -_id")
+    .sort({createAt: -1 }) // optional: newest first
+    .skip(skip)
+    .limit(limit)
+
+    const total = await Property.countDocuments();
+
+    res.status(200).json({
+      data:properties,
+      page,
+      limit,
+      totalPages:Math.ceil(total/limit),
+      totalItems:total
+    })
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -64,9 +83,10 @@ export const getAllProperties = async (req, res) => {
 
 export const getProperty = async (req, res) => {
   try {
-    const id ="68c14e6f35abf4f09e96e848"
-    // const { id } = req.params; // this works only if route has "/:id"
-    const property = await Property.findById(id);
+    // const id ="68c14e6f35abf4f09e96e848"
+    const { id } = req.params; // this works only if route has "/:id"
+    const property = await Property.findById(id)
+    .populate("owner","name email mobile updatedAt -_id")
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
