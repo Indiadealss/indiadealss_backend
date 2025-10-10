@@ -12,6 +12,6 @@ router.post("/createProperty",
       {name:"video",maxCount:5}
     ]),
      createProperty);
-router.get("/getProperty", getProperty); 
+router.get("/getProperty/:id", getProperty); 
 
 export default router;
