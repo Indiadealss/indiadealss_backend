@@ -29,7 +29,7 @@ export const createProperty = async (req, res) => {
       propertyData.video = req.files.video.map((file) => ({ src: file.location }));
     }else{
       // No video uploaded
-      propertyData.images = [{src:'No image uploaded'}]
+      propertyData.video = [{src:'No image uploaded'}]
     }
 
     const formattedLocation = Array.isArray(location) ? location[0] : location;
