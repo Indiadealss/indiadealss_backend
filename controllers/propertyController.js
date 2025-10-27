@@ -57,14 +57,28 @@ export const getAllProperties = async (req, res) => {
     //Get queary params from frontend
     const page = parseInt(req.query.page) || 1; 
     const limit = parseInt(req.query.limit) || 10;
+    const location = req.query.location || 'india'
 
     const skip = (page - 1) * limit;
 
-    const properties = await Property.find()
+    console.log(location);
+    
+    let properties;
+    if(location === 'All India'){
+      properties = await Property.find()
+       .populate("owner","name mobile email -_id")
+    .sort({createAt: -1 }) // optional: newest first
+    .skip(skip)
+    .limit(limit)
+    }
+    else{
+      const cityRegex = new RegExp(`"City":"${location}"`, "i");
+       properties = await Property.find({location:{$regex: cityRegex}})
     .populate("owner","name mobile email -_id")
     .sort({createAt: -1 }) // optional: newest first
     .skip(skip)
     .limit(limit)
+     }
 
     const total = await Property.countDocuments();
 
