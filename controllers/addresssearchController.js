@@ -1,6 +1,6 @@
 import axios from "axios";
 import dotenv from 'dotenv';
-
+import  Mapping from '../models/Maping.js'
 
 dotenv.config();
 
@@ -30,7 +30,21 @@ export const addresssearch = async  (req, res) => {
       place_id: place.place_id,
     }));
 
-    res.status(200).json({ results });
+    const existingAddresses = await Mapping .find({
+      address:{ $in: results.map((r) => r.address)},
+    });
+
+    const newResults = results.filter(
+      (r) => !existingAddresses.some((e)=> e.address === r.address)
+    );
+
+    let loca = [];
+    if(newResults.length > 0){
+      loca = await Mapping.insertMany(newResults);
+    }
+
+
+    res.status(200).json({message:'New locations added', results , loca });
   } catch (error) {
     console.error("Google Maps API error:", error.message);
     res.status(500).json({ message: "Failed to fetch data from Google Maps API" });
