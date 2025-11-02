@@ -11,15 +11,47 @@ const locationSchema = new mongoose.Schema({
     }
 })
 
+const project = new mongoose.Schema({
+    name:{
+        type:String,
+        required:true
+    },
+    rera:{
+        type:String,
+        required:true
+    }
+
+})
 const MapingSchema = new mongoose.Schema({
     name:{
         type:String,
+        required:true
+    },
+    locality:{
+        type:String,
+        default:'locality',
         required:true
     },
     address:{
         type:String,
         required:true,
         unique:true
+    },
+    city:{
+        type:String,
+        required:true
+    },
+    state:{
+        type:String,
+        required:false
+    },
+    pincode:{
+        type: String,
+        required:true
+    },
+    country:{
+        type:String,
+        required:true
     },
     location:{
         type:locationSchema,

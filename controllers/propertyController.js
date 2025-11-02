@@ -6,7 +6,9 @@ export const createProperty = async (req, res) => {
 
    
 
-    const { owner, location, ...propertyData } = req.body;
+    const { owner, location,imageTypes, ...propertyData } = req.body;
+    
+    
 
     if (!owner || !mongoose.Types.ObjectId.isValid(owner)) {
       return res.status(400).json({ success: false, message: "Valid owner ID is required" });
@@ -16,9 +18,37 @@ export const createProperty = async (req, res) => {
       return res.status(400).json({ success: false, message: "Location is required" });
     }
 
+     const imageTypesArray = Array.isArray(imageTypes)
+      ? imageTypes
+      : imageTypes
+      ? [imageTypes]
+      : [];
+
+      const fileFields = [];
+      Object.keys(req.body).forEach((key) => {
+        if(key.startsWith("fields_")) {
+          const index = Number(key.split("_")[1]);
+          try{
+            fileFields.push({
+              index,
+              fields:JSON.parse(req.body[key]),
+            })
+          }catch{
+            fileFields.push({index,fields:[]})
+          }
+
+          delete propertyData[key];
+        }
+      });
     // Map images if uploaded
     if (req.files && req.files.images) {
-      propertyData.images = req.files.images.map((file) => ({ src: file.location }));
+      // console.log(req.files,req.files.imageTypes,req.imageTypes)
+      propertyData.images = req.files.images.map((file,index) => 
+        {
+          const matchedFields = fileFields.find((f) => f.index === index);
+          return { src: file.location,type:imageTypesArray[index] || "general", fields: matchedFields ? matchedFields.fields : [] }
+          });
+        
     }else{
       // No image uploaded
       propertyData.images = [{src:'No image uploaded'}];
@@ -54,45 +84,96 @@ export const createProperty = async (req, res) => {
 
 export const getAllProperties = async (req, res) => {
   try {
-    //Get queary params from frontend
-    const page = parseInt(req.query.page) || 1; 
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const location = req.query.location || 'india'
-
     const skip = (page - 1) * limit;
-
-    console.log(location);
     
-    let properties;
-    if(location === 'All India'){
-      properties = await Property.find()
-       .populate("owner","name mobile email -_id")
-    .sort({createAt: -1 }) // optional: newest first
-    .skip(skip)
-    .limit(limit)
-    }
-    else{
-      const cityRegex = new RegExp(`"City":"${location}"`, "i");
-       properties = await Property.find({location:{$regex: cityRegex}})
-    .populate("owner","name mobile email -_id")
-    .sort({createAt: -1 }) // optional: newest first
-    .skip(skip)
-    .limit(limit)
-     }
 
-    const total = await Property.countDocuments();
+    const {
+      location = '',
+      projectname ='',
+      purpose = '',
+      propertyType = '',
+      ownership = '',
+      furnishing = '',
+      minPrice = '',
+      maxPrice = '',
+      bedroom = '',
+      bathroom = ''
+    } = req.query;
+
+    // Build a dynamic filter object
+    const filter = {};
+
+    // Location (regex match inside JSON string)
+    if (location && location !== 'All India') {
+      const cityRegex = new RegExp(`"City":"${location}"`, 'i');
+      filter.location = { $regex: cityRegex };
+    }
+
+    // console.log(purpose);
+    
+    // Purpose filter
+    if (purpose) {
+      filter.purpose = purpose;
+    }
+
+    if(projectname){
+      filter.projectname = projectname;
+    }
+
+    // Property type (e.g. flat, commercial, plot)
+    if (propertyType) {
+      filter.propertyType = propertyType;
+    }
+
+    // Ownership
+    if (ownership) {
+      filter.ownership = ownership;
+    }
+
+    // Furnishing status
+    if (furnishing) {
+      filter.furnishing = furnishing;
+    }
+
+    // Bedrooms & Bathrooms
+    if (bedroom) {
+      filter.bedroom = bedroom;
+    }
+    if (bathroom) {
+      filter.bathroom = bathroom;
+    }
+
+    // Price range
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    // Fetch properties using filter
+    const properties = await Property.find(filter)
+      .populate('owner', 'name mobile email -_id')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Property.countDocuments(filter);
 
     res.status(200).json({
-      data:properties,
+      data: properties,
       page,
       limit,
-      totalPages:Math.ceil(total/limit),
-      totalItems:total
-    })
+      totalPages: Math.ceil(total / limit),
+      totalItems: total
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 export const getProperty = async (req, res) => {
