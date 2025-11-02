@@ -8,9 +8,9 @@ dotenv.config();
 
 
 export const addresssearch = async  (req, res) => {
-  const { query } = req.query;
+  const { query,city } = req.query;
 
-  if (!query) {
+  if (!query && !city) {
     return res.status(400).json({ message: "Query parameter is required" });
   }
 
@@ -18,17 +18,32 @@ export const addresssearch = async  (req, res) => {
     // Google Places Text Search API endpoint
     const response = await axios.get("https://maps.googleapis.com/maps/api/place/textsearch/json", {
       params: {
-        query,
+        query: city ? `${query} in ${city}` : query,
         key: process.env.GOOGLE_MAPS_API_KEY,
       },
     });
 
-    const results = response.data.results.map((place) => ({
-      name: place.name,
-      address: place.formatted_address,
-      location: place.geometry.location,
-      place_id: place.place_id,
-    }));
+    const results = response.data.results.map((place) => {
+      const formatted = place.formatted_address.split(",");
+      const country = formatted.pop()?.trim() || "";
+      const pincodeMatch = formatted[formatted.length - 1]?.match(/\b\d{6}\b/);
+      const pincode = pincodeMatch ? pincodeMatch[0] : "000000";
+      const state = formatted[formatted.length - 1]
+      ?.replace(pincode, "")
+      ?.trim() || "";
+      const city = formatted[formatted.length - 2] ?.trim() || "";
+
+      return {
+        name:place.name,
+        address:place.formatted_address,
+        city,
+        state,
+        pincode,
+        country,
+        location: place.geometry.location,
+        place_id:place.place_id,
+      };
+    });
 
     const existingAddresses = await Mapping .find({
       address:{ $in: results.map((r) => r.address)},
@@ -44,7 +59,7 @@ export const addresssearch = async  (req, res) => {
     }
 
 
-    res.status(200).json({message:'New locations added', results , loca });
+    res.status(200).json({message:`${newResults.length} New locations added`, results , loca });
   } catch (error) {
     console.error("Google Maps API error:", error.message);
     res.status(500).json({ message: "Failed to fetch data from Google Maps API" });

@@ -24,7 +24,20 @@ const imagesSchema = new mongoose.Schema({
         type:String,
         unique:false,
         require:true
-    }
+    },
+    type:{
+        type:String,
+        default:'',
+    },
+    fields: {
+    type: [
+      {
+        key: { type: String },
+        value: { type: String }
+      }
+    ],
+    default: []
+}
 })
 
 const PropertySchema = new mongoose.Schema({
