@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 import Property from '../models/Property.js';
+import { generateDescription, generateFAQ } from "../utils/generateDescription.js";
+import Feature from "../models/Feature.js";
 
 export const createProperty = async (req, res) => {
   try {
 
    
 
-    const { owner, location,imageTypes, ...propertyData } = req.body;
+    const { owner, location,imageTypes,purpose,projectname,Buldingfeature,rera, ...propertyData } = req.body;
     
     
 
@@ -63,6 +65,72 @@ export const createProperty = async (req, res) => {
     }
 
     const formattedLocation = Array.isArray(location) ? location[0] : location;
+  
+    
+      console.log('Buldingfeature:',Buldingfeature);
+      
+    // ************* AI GENERATION LOGIC *************
+   if (purpose === "Project") {
+  let featureIds = [];
+
+  if (Array.isArray(Buldingfeature)) {
+    featureIds = Buldingfeature;
+  } else if (typeof Buldingfeature === "string" && Buldingfeature.trim() !== "") {
+    try {
+      featureIds = JSON.parse(Buldingfeature);
+    } catch (error) {
+      featureIds = [Buldingfeature];
+    }
+  }
+
+  console.log("📦 Final Feature IDs:", featureIds);
+
+  // Fetch names from DB
+  const featureDocs = await Feature.find({ _id: { $in: featureIds } });
+
+  const featureNames = featureDocs.map(feat => feat.name);
+
+  const faqAnswerRaw = await generateFAQ({
+  projectName: projectname,
+  features: featureNames,
+  location: formattedLocation
+});
+
+let faqAnswer;
+try {
+  faqAnswer = JSON.parse(faqAnswerRaw);
+} catch {
+  faqAnswer = [faqAnswerRaw]; // fallback single text
+}
+
+  // Generate description using names (NOT JSON.parse)
+  const desc = await generateDescription({
+    projectName: projectname,
+    location: formattedLocation,
+    rera,
+    features: featureNames   // <-- ✔ FIXED
+  });
+
+  console.log(desc);
+
+  propertyData.faq = [
+  {
+    question: `Why you should consider ${projectname}?`,
+    answer: faqAnswer
+  }
+];
+
+  
+ 
+}
+
+propertyData.purpose = purpose;
+
+ propertyData.projectname = projectname
+  propertyData.Buldingfeature = Buldingfeature;
+  
+  propertyData.projectDescription = desc;
+
 
     const property = await Property.create({
       owner,
@@ -182,6 +250,7 @@ export const getProperty = async (req, res) => {
     const { id } = req.params; // this works only if route has "/:id"
     const property = await Property.findById(id)
     .populate("owner","name email mobile updatedAt -_id")
+    .populate("Buldingfeature", "name icon")
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });

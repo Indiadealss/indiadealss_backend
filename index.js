@@ -8,6 +8,8 @@ import propertyRoutes from './routes/propertyRoutes.js'
 import bodyParser from "body-parser";
 import citiesRoute from "./routes/citiesRoute.js"
 import addresssearchRoute   from "./routes/addresssearch.js";
+import featureRoute from "./routes/featureRoutes.js"
+import leadRoute from "./routes/leadRoute.js"
 
 dotenv.config();
 connectDB();
@@ -37,6 +39,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/cities",citiesRoute);
 app.use("/api/searchaddress",addresssearchRoute);
+app.use("/api/feature",featureRoute);
+app.use("/api/lead",leadRoute);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 

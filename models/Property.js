@@ -1,24 +1,5 @@
 import mongoose from "mongoose";
-//const mongoose = require("mongoose");
 
-// const PropertySchema = new mongoose.Schema(
-//   {
-//     title: { type: String, required: true },
-//     description: String,
-//     price: Number,
-//     address: String,
-//     images: [String],
-//     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-//   },
-//   { timestamps: true }
-// );
-
-// const heighlightSchema = new mongoose.Schema({
-//     name:{
-//         type:String,
-//         require:true
-//     }
-// })
 const imagesSchema = new mongoose.Schema({
     src:{
         type:String,
@@ -54,7 +35,8 @@ const PropertySchema = new mongoose.Schema({
     owners_type:{
       type:String
     },
-   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+   Buldingfeature:[{type: mongoose.Schema.Types.ObjectId, ref:'Feature'}]
 },{strict: false,timestamps:true})
 
 export default mongoose.model("Property", PropertySchema);
