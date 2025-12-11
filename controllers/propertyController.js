@@ -111,7 +111,6 @@ try {
     features: featureNames   // <-- ✔ FIXED
   });
 
-  console.log(desc);
 
   propertyData.faq = [
   {
@@ -122,7 +121,7 @@ try {
 
   
  
-}
+
 
 propertyData.purpose = purpose;
 
@@ -131,7 +130,7 @@ propertyData.purpose = purpose;
   
   propertyData.projectDescription = desc;
 
-
+   }
     const property = await Property.create({
       owner,
       location: formattedLocation,
@@ -229,6 +228,9 @@ export const getAllProperties = async (req, res) => {
 
     const total = await Property.countDocuments(filter);
 
+    console.log("TOTAL PROPERTIES FOUND:", total);
+    console.log("PROPERTIES FETCHED IN THIS PAGE:", properties.length);
+
     res.status(200).json({
       data: properties,
       page,
@@ -238,8 +240,15 @@ export const getAllProperties = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message })
+     if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.errors
+      })
   }
+}
 };
 
 

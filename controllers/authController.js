@@ -20,7 +20,18 @@ export const registerUser = async (req, res) => {
     const exists = await User.findOne({ mobile });
     if (exists) return res.status(400).json({ error: "Mobile Number already exists" });
     const user = await User.create({ name, email,mobile});
-    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email,mobile:user.mobile } });
+    const token = createToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    console.log(token,'ok');
+    
+    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email,mobile:user.mobile,token } });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -125,6 +136,9 @@ export const verifyOtp = async (req, res) => {
   
  
   const token = createLoginToken(user._id);
+
+  console.log(token,'hello');
+  
 
   res.cookie("token",token,{
     httpOnly:true,
