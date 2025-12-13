@@ -8,7 +8,7 @@ export const createProperty = async (req, res) => {
 
    
 
-    const { owner, location,imageTypes,purpose,projectname,Buldingfeature,rera, ...propertyData } = req.body;
+    const { owner, location,imageTypes,purpose,projectname,Buldingfeature,rera,officeUnits, ...propertyData } = req.body;
     
     
 
@@ -118,6 +118,9 @@ try {
     answer: faqAnswer
   }
 ];
+
+propertyData.rera = rera;
+propertyData.officeUnits = officeUnits;
 
   
  

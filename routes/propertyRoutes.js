@@ -8,8 +8,8 @@ const router = express.Router();
 router.get("/getAllProperties",  getAllProperties);
 router.post("/createProperty",
      upload.fields([
-      {name:"images",maxCount:10},
-      {name:"video",maxCount:5}
+      {name:"images",maxCount:30},
+      {name:"video",maxCount:30}
     ]),
      createProperty);
 router.get("/getProperty/:id", getProperty); 
