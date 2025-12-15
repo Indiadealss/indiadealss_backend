@@ -134,6 +134,11 @@ propertyData.purpose = purpose;
   propertyData.projectDescription = desc;
 
    }
+
+   propertyData.purpose = purpose;
+   propertyData.Buldingfeature = Buldingfeature;
+   propertyData.projectname = projectname
+   propertyData.projectDescription = desc;
     const property = await Property.create({
       owner,
       location: formattedLocation,
@@ -263,6 +268,7 @@ export const getProperty = async (req, res) => {
     const property = await Property.findById(id)
     .populate("owner","name email mobile updatedAt -_id")
     .populate("Buldingfeature", "name icon")
+    .populate("amenitie", "name icon label");
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });

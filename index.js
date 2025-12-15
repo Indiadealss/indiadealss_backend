@@ -11,6 +11,10 @@ import addresssearchRoute   from "./routes/addresssearch.js";
 import featureRoute from "./routes/featureRoutes.js"
 import leadRoute from "./routes/leadRoute.js";
 import animitiesRoutes from "./routes/animitiesRoutes.js";
+import rooms from "./routes/otheroomRoutes.js";
+import propertyfeature from "./routes/propertyfeatureRoutes.js";
+import additionalfeature from "./routes/additionalfeatureRoutes.js";
+import overlookingfeature from "./routes/overlookingRoutes.js"
 
 dotenv.config();
 connectDB();
@@ -42,6 +46,10 @@ app.use("/api/cities",citiesRoute);
 app.use("/api/searchaddress",addresssearchRoute);
 app.use("/api/feature",featureRoute);
 app.use("/api/aminities",animitiesRoutes);
+app.use("/api/otherroom",rooms);
+app.use("/api/propertyfeature",propertyfeature);
+app.use("/api/additionalfeature",additionalfeature);
+app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
