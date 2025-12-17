@@ -8,7 +8,7 @@ export const createProperty = async (req, res) => {
 
    
 
-    const { owner, location,imageTypes,purpose,projectname,Buldingfeature,rera,officeUnits, ...propertyData } = req.body;
+    const { owner, location,imageTypes,purpose,projectname,Buldingfeature,rera,officeUnits,description, ...propertyData } = req.body;
     
     
 
@@ -104,7 +104,7 @@ try {
 }
 
   // Generate description using names (NOT JSON.parse)
-  const desc = await generateDescription({
+  propertyData.projectDescription = await generateDescription({
     projectName: projectname,
     location: formattedLocation,
     rera,
@@ -122,23 +122,14 @@ try {
 propertyData.rera = rera;
 propertyData.officeUnits = officeUnits;
 
-  
- 
-
-
-propertyData.purpose = purpose;
-
- propertyData.projectname = projectname
-  propertyData.Buldingfeature = Buldingfeature;
-  
-  propertyData.projectDescription = desc;
-
    }
+else{
+   propertyData.projectDescription = description;
+}
 
    propertyData.purpose = purpose;
    propertyData.Buldingfeature = Buldingfeature;
    propertyData.projectname = projectname
-   propertyData.projectDescription = desc;
     const property = await Property.create({
       owner,
       location: formattedLocation,
