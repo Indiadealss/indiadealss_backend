@@ -34,8 +34,10 @@ const MapingSchema = new mongoose.Schema({
     },
     address:{
         type:String,
-        required:true,
         unique:true
+    },
+    sector:{
+        type:String,
     },
     city:{
         type:String,
@@ -61,9 +63,13 @@ const MapingSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    npxid:{
+        type:String,
+        unique:true,
+    }
     
 });
 
-const Mapping = mongoose.model("Maping",MapingSchema)
+const Mapping = mongoose.model("Mapings",MapingSchema)
 
 export default Mapping;

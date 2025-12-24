@@ -24,17 +24,17 @@ export const sendOtpSms = async (mobile) => {
     const otp = Math.floor(1000 + Math.random() * 9000);
     otpStore[mobile] = otp;
 try {
-   const message = `OTP for login to crm is ${otp} . Do not share it with anyone. BDDGTL`;
+   const message = `OTP for login into INDIADEALSS is ${otp}. Do not share it with anyone.`;
 
     const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
     const params = {
-      UserID: "Deepubiz",
-      Password: "ynny9542YN",
-      SenderID: "BDDSPL",
+      UserID: "DSIbiz",
+      Password: "Gi5u?R?b",
+      SenderID: "lNDEAL",
       Phno: mobile,
       Msg: message,
-      EntityID:"1701169804142775424",
-      TemplateID:"1707169944518915650"
+      EntityID:"1701176562792196286",
+      TemplateID:"1707176578841640423"
     };
 
     const response = await axios.get(url, {params})

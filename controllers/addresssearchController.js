@@ -15,6 +15,13 @@ export const addresssearch = async  (req, res) => {
   }
 
   try {
+
+    const findLocation = await Mapping.find({
+      name: { $regex: `^${query}`, $options: "i" }
+    });
+
+    console.log(findLocation);
+    
     // Google Places Text Search API endpoint
     const response = await axios.get("https://maps.googleapis.com/maps/api/place/textsearch/json", {
       params: {
@@ -32,10 +39,11 @@ export const addresssearch = async  (req, res) => {
       ?.replace(pincode, "")
       ?.trim() || "";
       const city = formatted[formatted.length - 2] ?.trim() || "";
-
+      const sector = formatted[formatted.length -4] ?.trim() || "";
       return {
         name:place.name,
         address:place.formatted_address,
+        sector,
         city,
         state,
         pincode,
@@ -59,7 +67,7 @@ export const addresssearch = async  (req, res) => {
     }
 
 
-    res.status(200).json({message:`${newResults.length} New locations added`, results , loca });
+    res.status(200).json({message:`${newResults.length} New locations added`, results , loca,existingAddresses });
   } catch (error) {
     console.error("Google Maps API error:", error.message);
     res.status(500).json({ message: "Failed to fetch data from Google Maps API" });

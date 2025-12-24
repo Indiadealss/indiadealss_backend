@@ -23,6 +23,16 @@ const imagesSchema = new mongoose.Schema({
 
 const PropertySchema = new mongoose.Schema({
  
+  npxid:{
+    type:String,
+    unique:true,
+    sparse:true
+  },
+  spid:{
+    type: String,
+    unique:true,
+    sparse:true
+  },
     location:{
         type:Object,
         required:true
