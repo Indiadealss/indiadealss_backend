@@ -15,6 +15,7 @@ import rooms from "./routes/otheroomRoutes.js";
 import propertyfeature from "./routes/propertyfeatureRoutes.js";
 import additionalfeature from "./routes/additionalfeatureRoutes.js";
 import overlookingfeature from "./routes/overlookingRoutes.js"
+import pictureadd from "./routes/pictureRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -49,6 +50,7 @@ app.use("/api/aminities",animitiesRoutes);
 app.use("/api/otherroom",rooms);
 app.use("/api/propertyfeature",propertyfeature);
 app.use("/api/additionalfeature",additionalfeature);
+app.use("/api/picture",pictureadd);
 app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
 
