@@ -1,5 +1,5 @@
 import express from "express";
-import { genrateLead, genrateLeadUser, getLead } from "../controllers/leadController.js";
+import { genrateLead, getLead } from "../controllers/leadController.js";
 import multer from "multer";
 
 
@@ -10,6 +10,5 @@ const upload = multer();
 
 router.post("/lead", upload.none(),genrateLead);
 router.get("/getlead",getLead);
-router.post("/genrate",genrateLeadUser)
 
 export default router;

@@ -8,7 +8,6 @@ const LeadSchema = new mongoose.Schema({
     },
     property_id:{
         type:mongoose.Schema.Types.ObjectId,
-        unique:true,
          ref: "Property"
     },
     purpose:{
@@ -17,7 +16,12 @@ const LeadSchema = new mongoose.Schema({
     message:{
         type:'string',
     }
-},{timestamps:true})
+},{timestamps:true});
+
+LeadSchema.index(
+    {user_id: 1,property_id:1},
+    {unique: true}
+)
 
 const Lead = mongoose.model("Lead",LeadSchema);
 

@@ -1,25 +1,25 @@
-import Lead from "../models/Lead.js";
-import Property from "../models/Property.js";
+import gestLead from "../models/gestLead.js";
 
-
-export const genrateLead = async (req,res) => {
+export const genrateLeadUser = async (req,res) => {
     try{
         
-        const { user_id,property_id, ...leadData} = req.body;
+        const { user_name,property_id,message,mobile_no, ...leadData} = req.body;
 
         console.log(req.body)
 
-        if(!user_id){
-            return res.status(400).json({success:false,message:"user_id must be there"})
+        if(!user_name){
+            return res.status(400).json({success:false,message:"user_name must be there"})
         }
 
         if(!property_id){
             return res.status(400).json({success:false,message:' any property_id or project_id must be there '})
         }
 
-        const lead = await Lead.create({
-           user_id,
+        const lead = await gestLead.create({
+           user_name,
            property_id,
+           mobile,
+           message,
         ...leadData
         });
 
@@ -31,23 +31,21 @@ export const genrateLead = async (req,res) => {
 };
 
 
-
-
-export const getLead = async (req,res) => {
+export const getLeadByUser = async (req,res) => {
     try{
 
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const skip = (page - 1) * limit;
     
-        const lead = await Lead.find()
+        const lead = await gestLead.find()
         .populate('user_id','name mobile email ')
         .populate('property_id')
         .sort({createdAt:-1})
         .skip(skip)
         .limit(limit);
 
-        const total =  await Lead.countDocuments();
+        const total =  await gestLead.countDocuments();
 
         return res.status(200).json({
             data: lead,

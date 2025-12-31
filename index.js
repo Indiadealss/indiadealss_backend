@@ -16,6 +16,7 @@ import propertyfeature from "./routes/propertyfeatureRoutes.js";
 import additionalfeature from "./routes/additionalfeatureRoutes.js";
 import overlookingfeature from "./routes/overlookingRoutes.js"
 import pictureadd from "./routes/pictureRoutes.js";
+import leaduserRoute from "./routes/gestLeadRoutes.js"
 
 dotenv.config();
 connectDB();
@@ -53,6 +54,7 @@ app.use("/api/additionalfeature",additionalfeature);
 app.use("/api/picture",pictureadd);
 app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
+app.use("/api/leaduser",leaduserRoute);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
