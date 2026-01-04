@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Property from '../models/Property.js';
-import { generateDescription, generateFAQ } from "../utils/generateDescription.js";
+// import { generateDescription, generateFAQ } from "../utils/generateDescription.js";
 import Feature from "../models/Feature.js";
 import Mapping from "../models/Maping.js";
 
@@ -112,12 +112,7 @@ export const createProperty = async (req, res) => {
       }
 
       // Generate description using names (NOT JSON.parse)
-      propertyData.projectDescription = await generateDescription({
-        projectName: projectname,
-        location: formattedLocation,
-        rera,
-        features: featureNames   // <-- ✔ FIXED
-      });
+      propertyData.projectDescription = description;
 
 
       propertyData.faq = [

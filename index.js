@@ -16,7 +16,8 @@ import propertyfeature from "./routes/propertyfeatureRoutes.js";
 import additionalfeature from "./routes/additionalfeatureRoutes.js";
 import overlookingfeature from "./routes/overlookingRoutes.js"
 import pictureadd from "./routes/pictureRoutes.js";
-import leaduserRoute from "./routes/gestLeadRoutes.js"
+import leaduserRoute from "./routes/gestLeadRoutes.js";
+import adddealerRoute from "./routes/adddealerRoutes.js"
 
 dotenv.config();
 connectDB();
@@ -55,6 +56,7 @@ app.use("/api/picture",pictureadd);
 app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
 app.use("/api/leaduser",leaduserRoute);
+app.use("/api/adddealer",adddealerRoute);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 

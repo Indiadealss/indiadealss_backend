@@ -1,10 +1,17 @@
 import mongoose from "mongoose";
 
 const adddealerdetailsSchema = new mongoose.Schema({
-    userId:{
+    user_id:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
-        default: null
+        ref: "User",
+    },
+    property_id:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Property",
+    },
+    rera:{
+        type:String,
+        default:'',
     },
     logo:{
         type:String,
@@ -16,9 +23,14 @@ const adddealerdetailsSchema = new mongoose.Schema({
     },
     userType:{
         type: String,
-        default: 'Dealer'
+        default: 'dealer'
     }
 
-},{strict: false,timestamps:true})
+},{strict: false,timestamps:true});
 
-export default mongoose.model("Sealler",adddealerdetailsSchema);
+adddealerdetailsSchema.index(
+    {user_id:1,property_id:1},
+    {unique: true}
+)
+
+export default mongoose.model("Campain",adddealerdetailsSchema);
