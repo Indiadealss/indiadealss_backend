@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Property from '../models/Property.js';
-// import { generateDescription, generateFAQ } from "../utils/generateDescription.js";
+import { generateDescription, generateFAQ } from "../utils/generateDescription.js";
 import Feature from "../models/Feature.js";
 import Mapping from "../models/Maping.js";
 
