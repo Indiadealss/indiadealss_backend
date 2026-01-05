@@ -15,7 +15,7 @@ const adddealerdetailsSchema = new mongoose.Schema({
     },
     logo:{
         type:String,
-        defalut:null
+        defalut:'https://cdn.indiadealss.com/indiadealss/indiadealss/1766744904714-real_estate-removebg-preview.png'
     },
     video:{
         type:String,

@@ -53,3 +53,22 @@ export const getcampain = async (req,res) => {
         return res.status(500).json({success:false,message:'Server Error'})
     }
 }
+
+
+export const getcampainbyid = async (req,res) => {
+    try {
+        const  { npxid } = req.params;
+
+        const campaindealer = await adddealerdetails.findOne({ npxid })
+        .populate("user_id", "name email mobile")
+        .populate("property_id", "npxid projectname location");
+
+        if(!campaindealer){
+            return res.status(404).json({message: "Property not found"}); 
+        }
+
+        res.status(200).json(campaindealer);
+    } catch (error) {
+        res.status(500).json({message: 'Server Error'});
+    }
+}

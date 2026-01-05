@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { createdealer, getcampain } from '../controllers/adddelerDetailsController.js';
+import { createdealer, getcampain, getcampainbyid } from '../controllers/adddelerDetailsController.js';
 
 const router = express.Router();
 
@@ -11,6 +11,7 @@ router.post("/adddelear", upload.fields([
     {name:"video",maxCount:2}
 ]),createdealer);
 router.get("/geddealer",getcampain);
+router.get("/getcampainbyid",getcampainbyid);
 
 
 export default router
