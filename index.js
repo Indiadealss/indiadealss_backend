@@ -17,7 +17,8 @@ import additionalfeature from "./routes/additionalfeatureRoutes.js";
 import overlookingfeature from "./routes/overlookingRoutes.js"
 import pictureadd from "./routes/pictureRoutes.js";
 import leaduserRoute from "./routes/gestLeadRoutes.js";
-import adddealerRoute from "./routes/adddealerRoutes.js"
+import adddealerRoute from "./routes/adddealerRoutes.js";
+import upcomingadd from "./routes/upcomingRoutes.js"
 
 dotenv.config();
 connectDB();
@@ -53,6 +54,7 @@ app.use("/api/otherroom",rooms);
 app.use("/api/propertyfeature",propertyfeature);
 app.use("/api/additionalfeature",additionalfeature);
 app.use("/api/picture",pictureadd);
+app.use("/api/upcomingProjects",upcomingadd)
 app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
 app.use("/api/leaduser",leaduserRoute);

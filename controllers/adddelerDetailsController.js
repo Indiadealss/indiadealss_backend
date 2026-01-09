@@ -5,7 +5,15 @@ import User from "../models/User.js";
 
 export const createdealer = async (req, res) => {
     try {
-       const {name,npxid,reranumber, number,images} = req.body || {};
+       const {name,npxid,reranumber, number} = req.body || {};
+
+    //    const images = req.file.location;
+
+    if(!req.file){
+            return res.status(400).json({success:false,message: "icon must be there"})
+        }
+
+        const images = req.file.location; // url
 
         if(!name){
             return res.status(400).json({success:false,message:"Valid name is required"});
@@ -22,6 +30,9 @@ export const createdealer = async (req, res) => {
         const projectId = await Property.find({npxid})
 
         const userId = await User.find({mobile:`+91${number}`})
+
+        console.log(images);
+        
 
 
         const delears =  await adddealerdetails.create({
@@ -40,6 +51,7 @@ export const createdealer = async (req, res) => {
         return res.status(500).json({success:false,message:'server error'});
     }
 }
+
 
 
 export const getcampain = async (req,res) => {
