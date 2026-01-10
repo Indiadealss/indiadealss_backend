@@ -3,7 +3,7 @@ import upcomingproject from "../models/upcomingproject.js";
 export const createUpcomming = async (req,res) => {
 
     try {
-        const { name } = req.body
+        const { name , projecturl} = req.body
 
         if(!name){
             return res.status(400).json({success:false,message: "Name field can't be emity"})
@@ -24,6 +24,7 @@ export const createUpcomming = async (req,res) => {
         const additionalFeatures = await upcomingproject.create({
             name,
             label:name,
+            projecturl:projecturl,
             banner:images,
         })
 

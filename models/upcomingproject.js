@@ -13,6 +13,9 @@ const upcomingprojectSchema = new mongoose.Schema({
     banner:{
         type:String,
         required:true
+    },
+    projecturl:{
+        type:String
     }
 },{timestamps:true})
 
