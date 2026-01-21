@@ -21,6 +21,10 @@ const adddealerdetailsSchema = new mongoose.Schema({
         type:String,
         default:null
     },
+    npxid:{
+        type:String,
+        required:true
+    },
     userType:{
         type: String,
         default: 'dealer'

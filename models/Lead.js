@@ -11,10 +11,18 @@ const LeadSchema = new mongoose.Schema({
          ref: "Property"
     },
     purpose:{
-        type:'string'
+        type:String
     },
     message:{
-        type:'string',
+        type:String,
+    },
+    spid:{
+        type:String,
+        sparse:true
+    },
+    npxid:{
+        type:String,
+        sparse:true
     }
 },{timestamps:true});
 

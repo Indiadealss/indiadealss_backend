@@ -133,6 +133,9 @@ export const verifyOtp = async (req, res) => {
     });
   }
 
+
+  
+
   
  
   const token = createLoginToken(user._id);
@@ -161,3 +164,57 @@ export const verifyOtp = async (req, res) => {
 
   
 };
+
+export const updateuserprofile = async (req,res) => {
+    try {
+      const {id, you_are,name,email_id,company_name, company_url, company_profile, address, landline,logo,profile_photo} = req.body || {};
+
+      if(!id){
+        return res.status(400).json({status:false,message:'id compalsury to update things'})
+      }
+
+      if(!you_are){
+        return res.status(400).json({status:false,message:'please enter the who you are'})
+      }
+
+      if(!name){
+        return res.status(400).json({status:false, message:'Enter the Name'})
+      }
+
+      if(!email_id){
+        return res.status(400).json({status:false, message:'Enter the email_id'})
+      }
+      if(!company_name){
+        return res.status(400).json({status:false, message:'Enter the Company Name'})
+      }
+
+
+      if(!company_profile){
+        return res.status(400).json({status:false, message:'Write the Company profile'})
+      }
+
+      if(!address){
+        return res.status(400).json({status:false, message:'Enter the address'})
+      }
+
+      const user = await User.updateOne({_id:id}, {$set: {
+        you_are,
+        name,
+        email_id,
+        company_name,
+        company_url,
+        company_profile,
+        address,
+        landline,
+        logo,
+        profile_photo
+      }})
+
+      return res.status(201).json({success:true,message:'update',data:user})
+
+      
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({success:false,message:'Server error'})
+    }
+  }

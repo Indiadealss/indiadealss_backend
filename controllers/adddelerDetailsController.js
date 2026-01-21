@@ -9,11 +9,11 @@ export const createdealer = async (req, res) => {
 
     //    const images = req.file.location;
 
-    if(!req.file){
+    if(!req.files){
             return res.status(400).json({success:false,message: "icon must be there"})
         }
 
-        const images = req.file.location; // url
+        const images = req.files.images[0].location // url
 
         if(!name){
             return res.status(400).json({success:false,message:"Valid name is required"});
@@ -38,6 +38,7 @@ export const createdealer = async (req, res) => {
         const delears =  await adddealerdetails.create({
             user_id: userId[0]._id,
             property_id:projectId[0]._id,
+            npxid,
             rera:reranumber,
             logo:images,
             userType:'Property Advisor'
@@ -71,10 +72,11 @@ export const getcampainbyid = async (req,res) => {
     try {
         const  { npxid } = req.params;
 
-        const campaindealer = await adddealerdetails.findOne({ npxid })
+        const campaindealer = await adddealerdetails.find({ npxid })
         .populate("user_id", "name email mobile")
         .populate("property_id", "npxid projectname location");
 
+        
         if(!campaindealer){
             return res.status(404).json({message: "Property not found"}); 
         }
