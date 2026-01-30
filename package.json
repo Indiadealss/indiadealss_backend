@@ -24,6 +24,7 @@
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
+    "nodemailer": "^7.0.12",
     "openai": "^6.9.0",
     "twilio": "^5.8.2"
   },

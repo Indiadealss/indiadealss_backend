@@ -9,7 +9,7 @@ export const createProperty = async (req, res) => {
 
 
 
-    const { owner, location, imageTypes, purpose, projectname, Buldingfeature, rera, officeUnits, description, ...propertyData } = req.body;
+    const { owner, faqanswer, location, imageTypes, purpose, projectname, Buldingfeature, rera, officeUnits, description, projecttitle, titleDescription, projectdeveloper, ...propertyData } = req.body;
 
     const generateShortId = (objectId) => {
       return objectId
@@ -27,7 +27,10 @@ export const createProperty = async (req, res) => {
       return res.status(400).json({ success: false, message: "Location is required" });
     }
 
-    
+    if (!req.body.npxid) {
+      delete req.body.npxid;
+    }
+
 
     const imageTypesArray = Array.isArray(imageTypes)
       ? imageTypes
@@ -98,33 +101,22 @@ export const createProperty = async (req, res) => {
 
       const featureNames = featureDocs.map(feat => feat.name);
 
-      const faqAnswerRaw = await generateFAQ({
-        projectName: projectname,
-        features: featureNames,
-        location: formattedLocation
-      });
-
-      let faqAnswer;
-      try {
-        faqAnswer = JSON.parse(faqAnswerRaw);
-      } catch {
-        faqAnswer = [faqAnswerRaw]; // fallback single text
-      }
+      
 
       // Generate description using names (NOT JSON.parse)
       propertyData.projectDescription = description;
 
 
-      propertyData.faq = [
-        {
-          question: `Why you should consider ${projectname}?`,
-          answer: faqAnswer
-        }
-      ];
-
+      if (Array.isArray(faqanswer) && faqanswer.length > 0) {
+        propertyData.faq = faqanswer;
+      } else {
+        propertyData.faq = [];
+      }
       propertyData.rera = rera;
       propertyData.officeUnits = officeUnits;
-
+      propertyData.projecttitle = projecttitle;
+      propertyData.titleDescription = titleDescription;
+      propertyData.projectdeveloper = projectdeveloper;
     }
     else {
       propertyData.projectDescription = description;
@@ -150,11 +142,11 @@ export const createProperty = async (req, res) => {
 
       const parseLocation = JSON.parse(location).Address;
       const cleanedAddress = parseLocation.split(",").slice(1).join(",").trim();
-      
-      const findLocation = await Mapping.updateOne({address: cleanedAddress},{$set:{"npxid": payload.npxid}});
+
+      const findLocation = await Mapping.updateOne({ address: cleanedAddress }, { $set: { "npxid": payload.npxid } });
 
       console.log(findLocation);
-      
+
     } else {
       payload.spid = shortId;     // example: SP4A91F
     }
@@ -219,7 +211,7 @@ export const getAllProperties = async (req, res) => {
       const typesArray = propertyType.split(',').map(v => v.trim());
       filter.propertyType = { $in: typesArray.map(v => new RegExp(`^${v}$`, 'i')) };
       console.log(typesArray);
-      
+
     }
 
     // Ownership
@@ -249,7 +241,7 @@ export const getAllProperties = async (req, res) => {
 
     // Fetch properties using filter
     console.log(filter);
-    
+
     const properties = await Property.find(filter)
       .populate('owner', 'name mobile email -_id')
       .sort({ createdAt: -1 })

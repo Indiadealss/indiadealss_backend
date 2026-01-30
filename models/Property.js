@@ -26,12 +26,14 @@ const PropertySchema = new mongoose.Schema({
   npxid:{
     type:String,
     unique:true,
-    sparse:true
+    sparse:true,
+    default: undefined   // 🔥 important
   },
   spid:{
     type: String,
     unique:true,
-    sparse:true
+    sparse:true,
+    default: undefined   // 🔥 important
   },
     location:{
         type:Object,
