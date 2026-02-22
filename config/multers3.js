@@ -48,7 +48,7 @@ const upload = multer({
         },
         key:function (req,file,cb){
             // Customize folder
-            const folder = "indiadealss";
+            const folder = "brandsdoor";
             // Customize file name
             cb(null,`${folder}/${Date.now().toString()}-${file.originalname}`);
         },
