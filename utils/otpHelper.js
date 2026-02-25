@@ -24,17 +24,17 @@ export const sendOtpSms = async (mobile) => {
     const otp = Math.floor(1000 + Math.random() * 9000);
     otpStore[mobile] = otp;
 try {
-   const message = `OTP for login into INDIADEALSS is ${otp}. Do not share it with anyone.`;
+   const message = `OTP for login into BRANDSDOOR is ${otp}. Do not share it with anyone.`;
 
     const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
     const params = {
-      UserID: "DSIbiz",
-      Password: "Gi5u?R?b",
-      SenderID: "lNDEAL",
+      UserID: "Deepubiz",
+      Password: "ynny9542YN",
+      SenderID: "BDDSRV",
       Phno: mobile,
       Msg: message,
-      EntityID:"1701176562792196286",
-      TemplateID:"1707176578841640423"
+      EntityID:"1701169804142775424",
+      TemplateID:"1707177191994455532"
     };
 
     const response = await axios.get(url, {params})
@@ -53,17 +53,17 @@ export const sendmessage = async (lead,property,propertyOwner) => {
     
     
 try {
-   const message = `Hi, there is an enquiry to buy property in ${property.projectname}. Here are the buyer contact details: ${lead.Name} +91-${lead.PhoneNumber}. Team INDIADEALSS.`;
+   const message = `Hi, there is an enquiry to buy property in ${property.projectname}. Here are the buyer contact details: ${lead.Name} +91-${lead.PhoneNumber}. Team BRANDSDOOR.`;
 
     const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
     const params = {
-      UserID: "DSIbiz",
-      Password: "Gi5u?R?b",
-      SenderID: "lNDEAL",
+      UserID: "Deepubiz",
+      Password: "ynny9542YN",
+      SenderID: "BDDSRV",
       Phno: propertyOwner.mobile,
       Msg: message,
-      EntityID:"1701176562792196286",
-      TemplateID:"1707176578848717220"
+      EntityID:"1701169804142775424",
+      TemplateID:"1707177193264120820"
     };
 
     const response = await axios.get(url, {params})
