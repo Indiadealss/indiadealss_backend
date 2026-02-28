@@ -9,7 +9,7 @@ import { sendLeadMail } from "../utils/sendMail.js";
 export const genrateLead = async (req, res) => {
     try {
 
-        let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
+        let { user_id, property_id,projectOwner, PhoneNumber, Name, ...leadData } = req.body;
 
         console.log(req.body)
 
@@ -20,7 +20,9 @@ export const genrateLead = async (req, res) => {
             property_id
         })
 
-        
+        if(!projectOwner){
+            return res.status(200).json({success: false,message: 'project owner must be there'})
+        }
 
         if(existingLead){
             return res.status(200).json({ success: true,message : 'already saved' })
@@ -55,6 +57,7 @@ export const genrateLead = async (req, res) => {
             PhoneNumber,
             spid: property.spid,
             npxid: property.npxid,
+            projectOwner,
             ...leadData
         });
 

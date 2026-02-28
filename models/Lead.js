@@ -30,6 +30,10 @@ const LeadSchema = new mongoose.Schema({
   message: {
     type: String,
   },
+  projectOwner:{
+    type: String,
+    required: true
+  },
   spid: {
     type: String,
     sparse: true

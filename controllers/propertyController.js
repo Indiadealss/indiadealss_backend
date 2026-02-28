@@ -101,16 +101,28 @@ export const createProperty = async (req, res) => {
 
       const featureNames = featureDocs.map(feat => feat.name);
 
-      
+
 
       // Generate description using names (NOT JSON.parse)
       propertyData.projectDescription = description;
 
+      console.log(faqanswer, typeof (faqanswer), Array.isArray(faqanswer), 'fdjslkjlsfdjldsflannsdaiof')
 
-      if (Array.isArray(faqanswer) && faqanswer.length > 0) {
-        propertyData.faq = faqanswer;
+      // Proper FAQ Handling
+      if (faqanswer) {
+        try {
+          const parsedFaq =
+            typeof faqanswer === "string"
+              ? JSON.parse(faqanswer)
+              : faqanswer;
+
+          propertyData.faq = parsedFaq;
+        } catch (err) {
+          console.error("Invalid FAQ format:", err);
+          propertyData.faq = {};
+        }
       } else {
-        propertyData.faq = [];
+        propertyData.faq = {};
       }
       propertyData.rera = rera;
       propertyData.officeUnits = officeUnits;
