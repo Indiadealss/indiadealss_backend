@@ -29,7 +29,7 @@ connectDB();
 const app = express();
 // middlewares
 app.use(express.json({ limit: '900mb' }));
-app.use(express.urlencoded({ limit: '200mb', extended: true }));
+app.use(express.urlencoded({ limit: '900mb', extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({
