@@ -9,7 +9,7 @@ import { sendLeadMail } from "../utils/sendMail.js";
 export const genrateLead = async (req, res) => {
     try {
 
-        let { user_id, property_id,projectOwner, PhoneNumber, Name, ...leadData } = req.body;
+        let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
 
         console.log(req.body)
 
@@ -20,9 +20,7 @@ export const genrateLead = async (req, res) => {
             property_id
         })
 
-        if(!projectOwner){
-            return res.status(200).json({success: false,message: 'project owner must be there'})
-        }
+      
 
         if(existingLead){
             return res.status(200).json({ success: true,message : 'already saved' })
@@ -41,10 +39,12 @@ export const genrateLead = async (req, res) => {
 
         const property = await Property.findById(property_id);
 
-        console.log(property.owner);
+        console.log(property.owner,'pnjasd');
 
-        const propertyOwner = await User.findById(property.owner);
-
+        const projectOwner = property.owner;
+        const propertyOwner = await User.findById(projectOwner)
+        
+       console.log(propertyOwner,'propertyOOOOO');
        
         
         
@@ -53,15 +53,15 @@ export const genrateLead = async (req, res) => {
             user_id,
             property_id,
             leadIdentity,
+            projectOwner,
             Name,
             PhoneNumber,
             spid: property.spid,
             npxid: property.npxid,
-            projectOwner,
             ...leadData
         });
 
-        await sendLeadMail(lead, property)
+        // await sendLeadMail(lead, property)
 
         await sendmessage(lead,property,propertyOwner)
 

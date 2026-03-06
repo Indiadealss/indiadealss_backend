@@ -21,7 +21,7 @@ try {
   // this will throw if still invalid
   new URL(endpointUrl);
 } catch (err) {
-  throw new Error(`MINIO_ENDPOINT is not a valid URL: "${endpointRaw}". Provide something like http://15.235.131.103:9000`);
+  throw new Error(`MINIO_ENDPOINT is not a valid URL: "${endpointRaw}". Provide something like http://139.99.83.158:9000`);
 }
 
 const s3 = new S3Client({

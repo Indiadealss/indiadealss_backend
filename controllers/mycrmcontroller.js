@@ -5,13 +5,14 @@ import Lead from "../models/Lead.js";
 export const getycrmhomepage = async (req,res) => {
     try {
         const id = req.query.id || '';
+        console.log(id,'keshv');
         
         // const leads = await Lead.countDocuments({owner:id})
         const propertyDetails = await Property.find({owner:id})
         let data = [];
         let leads = [];
         const element = propertyDetails[0]._id;
-        const leadsdetails = await Lead.find({property_id:element,user_id:id})
+        const leadsdetails = await Lead.find({leadIdentity:`USER_${id}`})
         console.log(propertyDetails.length);
         data.push(propertyDetails,leadsdetails)
        

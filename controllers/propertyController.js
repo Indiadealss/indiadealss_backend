@@ -4,6 +4,161 @@ import { generateDescription, generateFAQ } from "../utils/generateDescription.j
 import Feature from "../models/Feature.js";
 import Mapping from "../models/Maping.js";
 
+
+export const createPropertyBasic = async (req, res) => {
+  try {
+    const { owner, location, purpose } = req.body;
+
+    const tempId = new mongoose.Types.ObjectId();
+    const shortId = tempId.toString().slice(-5).toLowerCase();
+
+    const payload = {
+      _id: tempId,
+      owner,
+      location,
+      purpose
+    };
+
+    if (purpose === "Project") {
+      payload.npxid = shortId;
+    } else {
+      payload.spid = shortId;
+    }
+
+    const property = await Property.create(payload);
+
+    res.status(201).json({
+      success: true,
+      propertyId: property._id
+    });
+
+  } catch (error) {
+  console.error("Create Basic Error:", error);
+  res.status(500).json({
+    success: false,
+    message: error.message
+  });
+}
+};
+
+export const updateProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const data = { ...req.body };
+
+    // ❌ prevent overwrite
+    delete data.images;
+    delete data.video;
+
+    const updated = await Property.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    res.json({ success: true, property: updated });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const uploadImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const imageObj = {
+      src: req.file.location,
+      type: req.body.type || "general",
+      fields: []
+    };
+
+    const property = await Property.findByIdAndUpdate(
+      id,
+      { $push: { images: imageObj } },
+      { new: true }
+    );
+
+    const newImage = property.images[property.images.length - 1];
+
+    res.json({
+      success: true,
+      image: newImage
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const uploadVideo = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No video uploaded" });
+    }
+
+    await Property.findByIdAndUpdate(id, {
+      $push: { video: { src: req.file.location } }
+    });
+
+    res.json({ success: true });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+export const updateImageMeta = async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+    const { type, fields } = req.body;
+
+    console.log('h');
+    
+    await Property.updateOne(
+      { _id: id, "images._id": imageId },
+      {
+        $set: {
+          "images.$.type": type,
+          "images.$.fields": fields || []
+        }
+      }
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const publishProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Property.findByIdAndUpdate(id, {
+      $set: { status: "active" }
+    });
+
+    res.json({ success: true });
+
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+};
+
 export const createProperty = async (req, res) => {
   try {
 
