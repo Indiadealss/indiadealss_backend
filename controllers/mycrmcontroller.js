@@ -49,9 +49,50 @@ export const getAlllistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id });
+    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["Sell", "Buy", "Rent"]} });
 
-    const propertyDetails = await Property.find({ owner: id })
+    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      total: propertyCount,
+      properties: propertyDetails, // ✅ fixed
+      page,
+      limit
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+export const getAllProjectlistingWithleads = async (req, res) => {
+  try {
+    const id = req.query.id || "";
+
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 2;
+
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 2;
+
+    const skip = (page - 1) * limit;
+
+    // ObjectId validation
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid owner id"
+      });
+    }
+
+    const propertyCount = await Property.countDocuments({ owner: id,purpose:'Project' });
+
+    const propertyDetails = await Property.find({ owner: id,purpose:'Project' })
       .skip(skip)
       .limit(limit);
 
