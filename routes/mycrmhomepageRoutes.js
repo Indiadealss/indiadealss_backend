@@ -8,8 +8,8 @@ router.get('/allListing',getAlllistingWithleads);
 router.get('/PlanListing',getPlainlistingWithleads);
 router.get('/PlatinumListing',getPlatinumlistingWithleads);
 router.get('/PremimumListing',getPremimumlistingWithleads);
-router.get('/InfinityListing',getAlllistingWithleads);
-router.get('/leadbyid',getInfinitylistingWithleads);
-router.get('/getprojectslisting',getAllProjectlistingWithleads)
+router.get('/InfinityListing',getInfinitylistingWithleads);
+router.get('/leadbyid',getListinglead);
+router.get('/getprojectslisting',getAllProjectlistingWithleads);
 
 export default router;

@@ -37,6 +37,8 @@ export const getAlllistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
@@ -49,9 +51,21 @@ export const getAlllistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["sell", "Buy", "Rent"]} });
+     let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] }
+    };
 
-    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    
+
+    const propertyCount = await Property.countDocuments(query);
+
+    const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
 
@@ -77,10 +91,14 @@ export const getPlainlistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
     const skip = (page - 1) * limit;
+
+    
 
     // ObjectId validation
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
@@ -89,9 +107,20 @@ export const getPlainlistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["Sell", "Buy", "Rent"]},listing:'plain' });
+        let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] },
+      listing:'plain'
+    };
 
-    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+    
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    const propertyCount = await Property.countDocuments(query);
+
+    const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
 
@@ -117,6 +146,8 @@ export const getPlatinumlistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
@@ -129,9 +160,20 @@ export const getPlatinumlistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["Sell", "Buy", "Rent"]},listing:'Platinum' });
 
-    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+        let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] },
+      listing:'Platinum'
+    };
+
+    
+    if (status && status !== "all") {
+      query.status = status;
+    }
+    const propertyCount = await Property.countDocuments(query);
+
+    const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
 
@@ -158,6 +200,8 @@ export const getPremimumlistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
@@ -170,9 +214,21 @@ export const getPremimumlistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["Sell", "Buy", "Rent"]},listing:'Premimum' });
 
-    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+        let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] },
+      listing:'Premimum'
+    };
+
+    
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    const propertyCount = await Property.countDocuments(query);
+
+    const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
 
@@ -198,6 +254,8 @@ export const getInfinitylistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
@@ -210,9 +268,21 @@ export const getInfinitylistingWithleads = async (req, res) => {
       });
     }
 
-    const propertyCount = await Property.countDocuments({ owner: id,purpose: { $in: ["Sell", "Buy", "Rent"]},listing:'Infinity' });
 
-    const propertyDetails = await Property.find({ owner: id, purpose: { $in: ["sell", "Buy", "Rent"]} })
+        let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] },
+      listing:'Infinity' 
+    };
+
+    
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    const propertyCount = await Property.countDocuments(query);
+
+    const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
 
@@ -238,6 +308,8 @@ export const getAllProjectlistingWithleads = async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 2;
 
+    let status = req.query.status || "all";
+
     if (page < 1) page = 1;
     if (limit < 1) limit = 2;
 
@@ -248,6 +320,17 @@ export const getAllProjectlistingWithleads = async (req, res) => {
       return res.status(400).json({
         message: "Invalid owner id"
       });
+    }
+
+
+        let query = {
+      owner: id,
+      purpose: { $in: ["sell", "Buy", "Rent"] }
+    };
+
+    
+    if (status && status !== "all") {
+      query.status = status;
     }
 
     const propertyCount = await Property.countDocuments({ owner: id,purpose:'Project' });
