@@ -14,5 +14,5 @@ const shortlistSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Shortlist =   mongoose.model("Shortlist", shortlistSchema);
-export default Shortlist;
+const shortlist =   mongoose.model("Shortlist", shortlistSchema);
+export default shortlist;
