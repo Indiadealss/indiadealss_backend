@@ -40,10 +40,6 @@ const userSchema = new mongoose.Schema({
      type: String,
       required: true, unique: true 
     },
-    logo:{
-      type:String,
-      default:''
-    },
     you_are:{
       type:String,
       default:''
@@ -52,7 +48,7 @@ const userSchema = new mongoose.Schema({
       type:String,
       default:''
     },
-    profile_photo:{
+    profile:{
       type:String,
       default:''
     }

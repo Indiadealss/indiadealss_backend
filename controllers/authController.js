@@ -165,56 +165,74 @@ export const verifyOtp = async (req, res) => {
   
 };
 
-export const updateuserprofile = async (req,res) => {
-    try {
-      const {id, you_are,name,email_id,company_name, company_url, company_profile, address, landline,logo,profile_photo} = req.body || {};
+export const updateuserprofile = async (req, res) => {
+  try {
+    const {
+      id,
+      you_are,
+      name,
+      email,
+      company_name,
+      company_url,
+      phone,
+      company_profile,
+      address,
+      landline
+    } = req.body;
 
-      if(!id){
-        return res.status(400).json({status:false,message:'id compalsury to update things'})
-      }
-
-      if(!you_are){
-        return res.status(400).json({status:false,message:'please enter the who you are'})
-      }
-
-      if(!name){
-        return res.status(400).json({status:false, message:'Enter the Name'})
-      }
-
-      if(!email_id){
-        return res.status(400).json({status:false, message:'Enter the email_id'})
-      }
-      if(!company_name){
-        return res.status(400).json({status:false, message:'Enter the Company Name'})
-      }
-
-
-      if(!company_profile){
-        return res.status(400).json({status:false, message:'Write the Company profile'})
-      }
-
-      if(!address){
-        return res.status(400).json({status:false, message:'Enter the address'})
-      }
-
-      const user = await User.updateOne({_id:id}, {$set: {
-        you_are,
-        name,
-        email_id,
-        company_name,
-        company_url,
-        company_profile,
-        address,
-        landline,
-        logo,
-        profile_photo
-      }})
-
-      return res.status(201).json({success:true,message:'update',data:user})
-
-      
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({success:false,message:'Server error'})
+    if (!id) {
+      return res.status(400).json({ success: false, message: "User ID required" });
     }
+
+    // ✅ validation (same as yours)
+    if (!you_are) return res.status(400).json({ message: "Enter who you are" });
+    if (!name) return res.status(400).json({ message: "Enter name" });
+    if (!email) return res.status(400).json({ message: "Enter email" });
+    if (!address) return res.status(400).json({ message: "Enter address" });
+
+    // ✅ safe update object
+    const updateData = {
+      you_are,
+      name,
+      email,
+      company_name,
+      company_url,
+      company_profile,
+      address,
+      phone,
+      landline
+    };
+
+    console.log(req.files);
+    
+
+    // ✅ handle images safely
+    if (req.files?.profile) {
+      updateData.profile = req.files.profile[0].location;
+    }
+
+    if (req.files?.logo) {
+      updateData.logo = req.files.logo[0].location;
+    }
+
+    // ✅ update user
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated",
+      data: user
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
   }
+};

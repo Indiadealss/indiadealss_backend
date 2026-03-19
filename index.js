@@ -20,6 +20,9 @@ import leaduserRoute from "./routes/gestLeadRoutes.js";
 import adddealerRoute from "./routes/adddealerRoutes.js";
 import upcomingadd from "./routes/upcomingRoutes.js"
 import mycrmhomepageRoute from "./routes/mycrmhomepageRoutes.js"
+import shortlistRoutes from "./routes/shortListRoutes.js"
+import viewedRoutes from "./routes/viewedListRoutes.js"
+import connectedRoutes from './routes/connectedRoutes.js'
 
 dotenv.config();
 connectDB();
@@ -60,7 +63,10 @@ app.use("/api/overlookingfeature",overlookingfeature);
 app.use("/api/lead",leadRoute);
 app.use("/api/leaduser",leaduserRoute);
 app.use("/api/adddealer",adddealerRoute);
-app.use("/api/mycrmhomepage",mycrmhomepageRoute)
+app.use("/api/mycrmhomepage",mycrmhomepageRoute);
+app.use("/api/shortlist", shortlistRoutes);
+app.use("/api/viewed", viewedRoutes);
+app.use("/api/connect", connectedRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
