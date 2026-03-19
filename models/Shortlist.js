@@ -15,4 +15,4 @@ const shortlistSchema = new mongoose.Schema(
 );
 
 const Shortlist =   mongoose.model("Shortlist", shortlistSchema);
-export default Shortlist
+export default Shortlist;

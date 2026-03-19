@@ -1,4 +1,4 @@
-import Property from "../models/Property.js";
+
 import Shortlist from "../models/shortlist.js";
 
 
@@ -49,11 +49,6 @@ export const getUserShortlist = async (req, res) => {
          path: "propertyId",
         model: "Property", // 👈 optional (only needed fields)
       });
-
-      
-      
-
-    
 
     res.status(200).json({
       success: true,
