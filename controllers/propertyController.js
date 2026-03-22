@@ -108,11 +108,15 @@ export const uploadVideo = async (req, res) => {
       return res.status(400).json({ success: false, message: "No video uploaded" });
     }
 
-    await Property.findByIdAndUpdate(id, {
+    const PropertyVideo = await Property.findByIdAndUpdate(id, {
       $push: { video: { src: req.file.location } }
     });
 
-    res.json({ success: true });
+     const newVideo = PropertyVideo.video[PropertyVideo.video.length - 1];
+    
+    console.log(newVideo);
+    
+    res.json({ success: true, video:newVideo });
 
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -325,6 +329,125 @@ export const createProperty = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+
+export const updatePropertyById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    let data = { ...req.body };
+    console.log(data,'data issdsflsafd  sdah asas');
+    
+    // 🔥 REMOVE ONLY RESTRICTED FIELDS
+    const restrictedFields = [
+      "owner",
+      "_id",
+      "createdAt",
+      "__v"
+    ];
+
+    restrictedFields.forEach(field => {
+      delete data[field];
+    });
+
+    // optional: images & video handle separately
+    delete data.images;
+    delete data.video;
+    
+
+    const updated = await Property.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Property not found"
+      });
+    }
+
+    res.json({ success: true, property: updated });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+
+
+export const deleteImage = async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+
+    const property = await Property.findById(id);
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    const image = property.images.id(imageId);
+
+    if (!image) {
+      return res.status(404).json({ success: false, message: "Image not found" });
+    }
+
+    // 🔥 (optional but recommended) delete from S3
+    // const fileKey = image.src.split(".com/")[1];
+    // await s3.deleteObject({ Bucket: process.env.BUCKET, Key: fileKey }).promise();
+
+    // remove from DB
+    image.deleteOne();
+
+    await property.save();
+
+    const updatedProperty = await Property.findById(id);
+
+    res.json({ success: true, message: "Image deleted", data:updatedProperty });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+export const deleteVideo = async (req, res) => {
+  try {
+    const { id, videoId } = req.params;
+
+    const property = await Property.findById(id);
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+console.log(videoId);
+
+    const video = property.video.id(videoId);
+
+    if (!video) {
+      return res.status(404).json({ success: false, message: "Video not found" });
+    }
+
+    // 🔥 optional S3 delete
+    // const fileKey = video.src.split(".com/")[1];
+    // await s3.deleteObject({ Bucket: process.env.BUCKET, Key: fileKey }).promise();
+
+    video.deleteOne();
+
+    const updatedProperty = await Property.findById(id);
+
+    await property.save();
+
+    res.json({ success: true, message: "Video deleted", data:updatedProperty });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 

@@ -21,6 +21,14 @@ const imagesSchema = new mongoose.Schema({
 }
 })
 
+
+const videoSchema = new mongoose.Schema({
+  src: {
+    type: String,
+    required: true
+  }
+});
+
 const PropertySchema = new mongoose.Schema({
  
   npxid:{
@@ -44,6 +52,10 @@ const PropertySchema = new mongoose.Schema({
         default:'Images are not uploaded',
         required:false,
     },
+      video: {
+    type: [videoSchema],   // ✅ ADD THIS
+    default: []
+  },
     owners_type:{
       type:String
     },
