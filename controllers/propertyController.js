@@ -564,6 +564,28 @@ export const getAllProperties = async (req, res) => {
 };
 
 
+export const getProjectNames = async (req, res) => {
+  try {
+    const projects = await Property.find({ npxid: { $exists: true, $ne: "" } })
+      .select("projectname"); // only project name
+
+      console.log(projects);
+      
+    res.status(200).json({
+      success: true,
+      count: projects.length,
+      data: projects,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 
 export const getProperty = async (req, res) => {
   try {
