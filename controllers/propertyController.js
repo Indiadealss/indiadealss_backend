@@ -461,6 +461,10 @@ export const getAllProperties = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const slug = req.query.slug || '';
+
+    console.log(slug);
+    
 
 
     const {
@@ -530,7 +534,7 @@ export const getAllProperties = async (req, res) => {
     }
 
     // Fetch properties using filter
-    console.log(filter);
+    // console.log(filter);
 
     const properties = await Property.find(filter)
       .populate('owner', 'name mobile email -_id')
@@ -540,8 +544,8 @@ export const getAllProperties = async (req, res) => {
 
     const total = await Property.countDocuments(filter);
 
-    console.log("TOTAL PROPERTIES FOUND:", properties, total);
-    console.log("PROPERTIES FETCHED IN THIS PAGE:", properties.length);
+    // console.log("TOTAL PROPERTIES FOUND:", properties, total);
+    // console.log("PROPERTIES FETCHED IN THIS PAGE:", properties.length);
 
     res.status(200).json({
       data: properties,
@@ -567,7 +571,7 @@ export const getAllProperties = async (req, res) => {
 export const getProjectNames = async (req, res) => {
   try {
     const projects = await Property.find({ npxid: { $exists: true, $ne: "" } })
-      .select("projectname"); // only project name
+      .select("projectname location npxid availabestatus"); // only project name
 
       console.log(projects);
       
