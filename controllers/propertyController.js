@@ -10,7 +10,7 @@ export const createPropertyBasic = async (req, res) => {
     const { owner, location, purpose } = req.body;
 
     const tempId = new mongoose.Types.ObjectId();
-    const shortId = tempId.toString().slice(-5).toLowerCase();
+    
 
     const payload = {
       _id: tempId,
@@ -19,11 +19,7 @@ export const createPropertyBasic = async (req, res) => {
       purpose
     };
 
-    if (purpose === "Project") {
-      payload.npxid = shortId;
-    } else {
-      payload.spid = shortId;
-    }
+    
 
     const property = await Property.create(payload);
 
@@ -151,14 +147,31 @@ export const updateImageMeta = async (req, res) => {
 export const publishProperty = async (req, res) => {
   try {
     const { id } = req.params;
+    const {purpose} = req.body
+
+    console.log(id,purpose , 'this is the purpose and id');
+    
+
+    const payload = {
+      status:"active"
+    }
+
+    const shortId = id.toString().slice(-5).toLowerCase();
+    if (purpose === "Project") {
+      payload.npxid = shortId;
+    } else {
+      payload.spid = shortId;
+    }
 
     await Property.findByIdAndUpdate(id, {
-      $set: { status: "active" }
+      $set: payload
     });
 
     res.json({ success: true });
 
   } catch (error) {
+    console.log(error,error.message , 'this is the error');
+    
     res.status(500).json({ success: false });
   }
 };
@@ -642,7 +655,9 @@ export const getPropertyByspid = async (req, res) => {
     const property = await Property.findOne({ spid })
       .populate("owner", "name email mobile updatedAt -_id")
       .populate("Buldingfeature", "name icon")
-      .populate("amenitie", "name icon label");
+      .populate("amenitie", "name icon label")
+      .populate("overlo","name label icon")
+      .populate("otherrooms", "name label icon");
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });

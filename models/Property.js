@@ -49,7 +49,7 @@ const PropertySchema = new mongoose.Schema({
     },
     images:{
         type:[imagesSchema],
-        default:'Images are not uploaded',
+        default:[],
         required:false,
     },
       video: {
@@ -65,6 +65,7 @@ const PropertySchema = new mongoose.Schema({
    otherrooms:[{type:mongoose.Schema.Types.ObjectId,ref:'otheroom'}],
    propertyfeature:[{type:mongoose.Schema.Types.ObjectId,ref:'Propertyfeatures'}],
    addFeature:[{type:mongoose.Schema.Types.ObjectId,ref:'additionalfeatures'}],
+   overlo:[{type:mongoose.Schema.Types.ObjectId,ref:'additionalfeatures'}],
 },{strict: false,timestamps:true})
 
 export default mongoose.model("Property", PropertySchema);

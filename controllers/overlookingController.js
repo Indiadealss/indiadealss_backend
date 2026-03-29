@@ -53,3 +53,30 @@ export const getoverlookingFeature = async (req,res) => {
         return res.status(500).json({success:false,message:"server Error",error:err.message})
     }
 }
+
+export const getOverlookingFeatureById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const feature = await overlooking.findById(id);
+
+    if (!feature) {
+      return res.status(404).json({
+        success: false,
+        message: "Feature not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: feature
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message
+    });
+  }
+};
