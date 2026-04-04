@@ -35,14 +35,19 @@ app.use(express.json({ limit: '900mb' }));
 app.use(express.urlencoded({ limit: '900mb', extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+const allowedOrigins = [
+  "https://www.brandsdoor.in",
+  "https://brandsdoor.in"
+];
+
 app.use(cors({
-  //origin: process.env.CLIENT_URL,
-	origin:[
-    process.env.CLIENT_URL,
-    process.env.CLIENT_URLB
-  ],
-	  methods: ['GET', 'POST', 'PUT','PATCH'],
-    allowedHeaders: ['Content-Type','Authorization'],
+  origin: function(origin, callback){
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
 }));
 
 app.use((req, res, next) => {
