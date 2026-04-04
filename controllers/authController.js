@@ -50,9 +50,9 @@ export const loginUser = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // set true in production
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
 	res.status(200).json({ message: "Login successful", token });
@@ -133,22 +133,17 @@ export const verifyOtp = async (req, res) => {
     });
   }
 
-
-  
-
-  
- 
   const token = createLoginToken(user._id);
 
   console.log(token,'hello');
   
 
-  res.cookie("token",token,{
-    httpOnly:true,
-    secure:false,
-    sameSite:"lax",
-    maxAge:24 * 60 * 60 * 1000
-  });
+  res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
   delete otpStore[mobile];
 
