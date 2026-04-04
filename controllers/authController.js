@@ -22,10 +22,12 @@ export const registerUser = async (req, res) => {
     const user = await User.create({ name, email,mobile});
     const token = createToken(user._id);
 
-    res.cookie("token", token, {
+   res.cookie("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+       domain: ".brandsdoor.in",
+       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -52,6 +54,8 @@ export const loginUser = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+       domain: ".brandsdoor.in",
+       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -142,6 +146,8 @@ export const verifyOtp = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
+       domain: ".brandsdoor.in",
+       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
