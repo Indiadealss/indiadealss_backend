@@ -138,18 +138,19 @@ export const verifyOtp = async (req, res) => {
   console.log(token,'hello');
   
 
-  // res.cookie("token", token, {
-  //     httpOnly: true,
-  //     secure: true,
-  //     sameSite: "none",
-  //     maxAge: 24 * 60 * 60 * 1000,
-  //   });
+  res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
   delete otpStore[mobile];
 
   return res.status(200).json({message:"OTP Verified successfully",
     token,
     user: {
+      _id: user._id,
       name: user.name,
       email: user.email,
       mobile: user.mobile,
