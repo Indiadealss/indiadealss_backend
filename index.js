@@ -37,7 +37,10 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({
   //origin: process.env.CLIENT_URL,
-	origin:process.env.CLIENT_URL,
+	origin:[
+    process.env.CLIENT_URL,
+    process.env.CLIENT_URLB
+  ],
 	  methods: ['GET', 'POST', 'PUT','PATCH'],
     allowedHeaders: ['Content-Type','Authorization'],
 }));

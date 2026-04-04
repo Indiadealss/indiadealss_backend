@@ -72,8 +72,13 @@ export const uploadImage = async (req, res) => {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
+    // 🔑 S3 key
+    const fileKey = req.file.key;
+
+    const cloudfrontUrl = `https://d3eoh63gynpjzh.cloudfront.net/${fileKey}`;
+
     const imageObj = {
-      src: req.file.location,
+      src: cloudfrontUrl,
       type: req.body.type || "general",
       fields: []
     };
@@ -104,8 +109,13 @@ export const uploadVideo = async (req, res) => {
       return res.status(400).json({ success: false, message: "No video uploaded" });
     }
 
+    // 🔑 S3 key
+    const fileKey = req.file.key;
+
+    const cloudfrontUrl = `https://d3eoh63gynpjzh.cloudfront.net/${fileKey}`;
+
     const PropertyVideo = await Property.findByIdAndUpdate(id, {
-      $push: { video: { src: req.file.location } }
+      $push: { video: { src: cloudfrontUrl } }
     });
 
      const newVideo = PropertyVideo.video[PropertyVideo.video.length - 1];
@@ -551,6 +561,10 @@ export const getAllProperties = async (req, res) => {
 
     const properties = await Property.find(filter)
       .populate('owner', 'name mobile email -_id')
+      .populate("Buldingfeature", "name icon")
+      .populate("amenitie", "name icon label")
+      .populate("overlo","name label icon")
+      .populate("otherrooms", "name label icon")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
