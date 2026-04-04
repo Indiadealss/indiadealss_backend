@@ -138,12 +138,12 @@ export const verifyOtp = async (req, res) => {
   console.log(token,'hello');
   
 
-  res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  // res.cookie("token", token, {
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: "none",
+  //     maxAge: 24 * 60 * 60 * 1000,
+  //   });
 
   delete otpStore[mobile];
 
