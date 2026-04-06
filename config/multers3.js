@@ -1,32 +1,15 @@
 import multer from "multer";
 import multerS3 from "multer-s3"
 import dotenv from "dotenv";
-import { S3Client } from "@aws-sdk/client-s3"
-// import { credentials } from "aws-sdk";
-
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 
 
 dotenv.config();
 
-// const endpointRaw = process.env.MINIO_ENDPOINT || "";
-
-// if (!endpointRaw) {
-//   throw new Error("MINIO_ENDPOINT is not set. Add MINIO_ENDPOINT=http://<host>:9000 to your .env");
-// }
-
-// let endpointUrl;
-// try {
-//   // ensure a proper URL (adds http:// if user omitted it)
-//   endpointUrl = endpointRaw.match(/^https?:\/\//) ? endpointRaw : `http://${endpointRaw}`;
-//   // this will throw if still invalid
-//   new URL(endpointUrl);
-// } catch (err) {
-//   throw new Error(`MINIO_ENDPOINT is not a valid URL: "${endpointRaw}". Provide something like http://139.99.83.158:9000`);
-// }
-
 const s3 = new S3Client({
-    region:"ap-south-1", //required but ignored by MinIO
-    credentials: {
+  region: "ap-south-1",
+  credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
   },
@@ -40,7 +23,6 @@ const upload = multer({
         s3,
         bucket: process.env.AWS_BUCKET,
         contentType: multerS3.AUTO_CONTENT_TYPE,
-        acl:"public-read", // so URL is accessible
         metadata: function (req,file,cb){
             cb(null,{filedName:file.fieldname});
         },

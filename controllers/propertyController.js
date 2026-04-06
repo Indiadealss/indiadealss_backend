@@ -486,6 +486,11 @@ export const getAllProperties = async (req, res) => {
     const skip = (page - 1) * limit;
     const slug = req.query.slug || '';
 
+    const filterForm= req.body;
+
+    console.log(filterForm,'this is the filter form');
+    
+
     console.log(slug);
     
 
@@ -556,6 +561,11 @@ export const getAllProperties = async (req, res) => {
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
+    filter.$or = [
+  { npxid: { $exists: true, $ne: "" } },
+  { spid: { $exists: true, $ne: "" } }
+];
+
     // Fetch properties using filter
     // console.log(filter);
 
@@ -563,6 +573,8 @@ export const getAllProperties = async (req, res) => {
       .populate('owner', 'name mobile email -_id')
       .populate("Buldingfeature", "name icon")
       .populate("amenitie", "name icon label")
+      .populate("addFeature", "name icon label")
+      .populate("propertyfeature", "name icon label")
       .populate("overlo","name label icon")
       .populate("otherrooms", "name label icon")
       .sort({ createdAt: -1 })

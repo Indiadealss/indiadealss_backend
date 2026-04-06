@@ -14,6 +14,8 @@ const createLoginToken = (userId) => {
   return jwt.sign({user_id:userId}, process.env.JWT_SECRET, { expiresIn: "1d" })
 }
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const registerUser = async (req, res) => {
   try {
     const { name, email,mobile } = req.body;
@@ -23,13 +25,13 @@ export const registerUser = async (req, res) => {
     const token = createToken(user._id);
 
    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-       domain: ".brandsdoor.in",
-       path: "/",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  httpOnly: true,
+  secure: isProd,                  // 🔥 prod only
+  sameSite: isProd ? "none" : "lax",  // 🔥 dynamic
+  domain: isProd ? ".brandsdoor.in" : undefined, // 🔥 only prod
+  path: "/",
+  maxAge: 24 * 60 * 60 * 1000,
+});
 
     console.log(token,'ok');
     
@@ -51,13 +53,13 @@ export const loginUser = async (req, res) => {
     const token = createToken(user);
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-       domain: ".brandsdoor.in",
-       path: "/",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  httpOnly: true,
+  secure: isProd,                  // 🔥 prod only
+  sameSite: isProd ? "none" : "lax",  // 🔥 dynamic
+  domain: isProd ? ".brandsdoor.in" : undefined, // 🔥 only prod
+  path: "/",
+  maxAge: 24 * 60 * 60 * 1000,
+});
 
 	res.status(200).json({ message: "Login successful", token });
 //    res.json({ message: "Login successful" });
@@ -143,13 +145,13 @@ export const verifyOtp = async (req, res) => {
   
 
   res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-       domain: ".brandsdoor.in",
-       path: "/",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  httpOnly: true,
+  secure: isProd,                  // 🔥 prod only
+  sameSite: isProd ? "none" : "lax",  // 🔥 dynamic
+  domain: isProd ? ".brandsdoor.in" : undefined, // 🔥 only prod
+  path: "/",
+  maxAge: 24 * 60 * 60 * 1000,
+});
 
   delete otpStore[mobile];
 

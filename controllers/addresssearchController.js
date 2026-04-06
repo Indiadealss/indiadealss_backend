@@ -16,11 +16,12 @@ export const addresssearch = async  (req, res) => {
 
   try {
 
-    const findLocation = await Mapping.find({
+    const findLocation = query ? await Mapping.find({
       name: { $regex: `^${query}`, $options: "i" }
-    });
+    }) : [];
 
-    console.log(findLocation);
+    console.log('Query parameter:', query);
+    console.log('findLocation results:', findLocation.length);
     
     // Google Places Text Search API endpoint
     const response = await axios.get("https://maps.googleapis.com/maps/api/place/textsearch/json", {
@@ -29,6 +30,11 @@ export const addresssearch = async  (req, res) => {
         key: process.env.GOOGLE_MAPS_API_KEY,
       },
     });
+
+
+    if (!response.data.results || response.data.results.length === 0) {
+      return res.status(200).json({message: "No locations found", results: [], loca: [], existingAddresses: [] });
+    }
 
     const results = response.data.results.map((place) => {
       const formatted = place.formatted_address.split(",");
@@ -54,11 +60,11 @@ export const addresssearch = async  (req, res) => {
     });
 
     const existingAddresses = await Mapping .find({
-      address:{ $in: results.map((r) => r.address)},
+      address:{ $in: results.map((r) => r.address.trim())},
     });
 
     const newResults = results.filter(
-      (r) => !existingAddresses.some((e)=> e.address === r.address)
+      (r) => !existingAddresses.some((e)=> e.address?.trim() === r.address.trim())
     );
 
     let loca = [];
@@ -69,8 +75,10 @@ export const addresssearch = async  (req, res) => {
 
     res.status(200).json({message:`${newResults.length} New locations added`, results , loca,existingAddresses });
   } catch (error) {
-    console.error("Google Maps API error:", error.message);
-    res.status(500).json({ message: "Failed to fetch data from Google Maps API" });
+    console.error("Error caught:", error.response?.data || error.message);
+    console.error("Error status:", error.response?.status);
+    console.error("Full error:", error);
+    res.status(500).json({ message: "Failed to fetch data from Google Maps API", error: error.response?.data || error.message });
   }
 };
 

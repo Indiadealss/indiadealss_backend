@@ -36,9 +36,15 @@ app.use(express.urlencoded({ limit: '900mb', extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "https://brandsdoor.in",
+  "https://www.brandsdoor.in",
+  "http://localhost:5173",   // 🔥 ADD THIS (vite)
+  "http://localhost:3000"    // 🔥 ADD THIS (react)
+];
 
 app.use(cors({
-  origin: ["https://brandsdoor.in", "https://www.brandsdoor.in"],
+  origin: allowedOrigins,
   credentials: true,   // 🔥 THIS IS THE FIX
 }));
 
