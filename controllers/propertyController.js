@@ -513,9 +513,24 @@ export const getAllProperties = async (req, res) => {
 
     // Location (regex match inside JSON string)
     if (location && location !== 'All India') {
-      const cityRegex = new RegExp(`"City":"${location}"`, 'i');
-      filter.location = { $regex: cityRegex };
+  filter.$and = [
+    ...(filter.$and || []),
+    {
+      $or: [
+        // Case 1: JSON string
+        {
+          location: {
+            $regex: new RegExp(`"City":"${location}"`, 'i')
+          }
+        },
+        // Case 2: Array of objects
+        {
+          'location.City': new RegExp(`^${location}$`, 'i')
+        }
+      ]
     }
+  ];
+}
 
     // console.log(purpose);
 
