@@ -488,7 +488,7 @@ export const getAllProperties = async (req, res) => {
 
     const filterForm= req.body;
 
-    console.log(filterForm,'this is the filter form');
+    console.log(page,'this is the filter form');
     
 
     console.log(slug);
@@ -511,8 +511,11 @@ export const getAllProperties = async (req, res) => {
     // Build a dynamic filter object
     const filter = {};
 
+    // console.log(location,'this is the location');
+    
+
     // Location (regex match inside JSON string)
-    if (location && location !== 'All India') {
+    if (location && location !== 'All India' && location !== 'all') {
   filter.$and = [
     ...(filter.$and || []),
     {
