@@ -20,6 +20,9 @@ export const addresssearch = async  (req, res) => {
       name: { $regex: `^${query}`, $options: "i" }
     }) : [];
 
+    
+    
+
     console.log('Query parameter:', query);
     console.log('findLocation results:', findLocation.length);
     
@@ -31,6 +34,7 @@ export const addresssearch = async  (req, res) => {
       },
     });
 
+    console.log(query,'query', city,'city',findLocation,'find location',response.data.results,'response data');
 
     if (!response.data.results || response.data.results.length === 0) {
       return res.status(200).json({message: "No locations found", results: [], loca: [], existingAddresses: [] });

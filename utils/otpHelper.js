@@ -55,6 +55,11 @@ export const sendmessage = async (lead,property,propertyOwner) => {
 try {
    const message = `Hi, there is an enquiry to buy property in ${property.projectname}. Here are the buyer contact details: ${lead.Name} +91-${lead.PhoneNumber}. Team BRANDSDOOR.`;
 
+   if(propertyOwner.mobile === '+917906518272'){
+    propertyOwner.mobile = '+919818752056'
+   }
+   console.log(property.propertyOwner);
+   
     const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
     const params = {
       UserID: "Deepubiz",
@@ -65,6 +70,8 @@ try {
       EntityID:"1701169804142775424",
       TemplateID:"1707177193264120820"
     };
+
+    console.log("SMS API Request Params:", params);
 
     const response = await axios.get(url, {params})
     

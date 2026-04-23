@@ -499,7 +499,8 @@ export const getAllProperties = async (req, res) => {
       location = '',
       projectname = '',
       purpose = '',
-      propertyType = '',
+      property = '',
+      propertytype = '',
       ownership = '',
       furnishing = '',
       minPrice = '',
@@ -511,81 +512,79 @@ export const getAllProperties = async (req, res) => {
     // Build a dynamic filter object
     const filter = {};
 
-    // console.log(location,'this is the location');
+    console.log(location,'this is the location');
     
 
-    // Location (regex match inside JSON string)
-    if (location && location !== 'All India' && location !== 'all') {
+  // NORMALIZE LOCATION
+const normalizedLocation = location?.toLowerCase().replace("-", " ");
+
+// LOCATION FILTER
+if (
+  normalizedLocation &&
+  normalizedLocation !== 'all india' &&
+  normalizedLocation !== 'all'
+) {
   filter.$and = [
     ...(filter.$and || []),
     {
-      $or: [
-        // Case 1: JSON string
-        {
-          location: {
-            $regex: new RegExp(`"City":"${location}"`, 'i')
-          }
-        },
-        // Case 2: Array of objects
-        {
-          'location.City': new RegExp(`^${location}$`, 'i')
-        }
-      ]
+      'location.City': { $regex: new RegExp(normalizedLocation, 'i') }
     }
   ];
 }
 
-    // console.log(purpose);
+// PURPOSE
+if (purpose) {
+  filter.purpose = purpose;
+}
 
-    // Purpose filter
-    if (purpose) {
-      filter.purpose = purpose;
-    }
+// PROPERTY
+if (property) {
+  const typesArray = property.split(',').map(v => v.trim());
+  filter.property = {
+    $in: typesArray.map(v => new RegExp(`^${v}$`, 'i'))
+  };
+}
 
-    if (projectname) {
-      filter.projectname = projectname;
-    }
+// PROPERTY TYPE (FIXED)
+if (propertytype) {
+  const typesArray = propertytype.split(',').map(v => v.trim());
+  filter.propertyType = {
+    $in: typesArray.map(v => new RegExp(`^${v}$`, 'i'))
+  };
+}
 
-    // Property type (e.g. flat, commercial, plot)
-    if (propertyType) {
-      const typesArray = propertyType.split(',').map(v => v.trim());
-      filter.propertyType = { $in: typesArray.map(v => new RegExp(`^${v}$`, 'i')) };
-      console.log(typesArray);
+// PRICE
+if (minPrice || maxPrice) {
+  const priceConditions = [];
 
-    }
+  if (minPrice) {
+    priceConditions.push({
+      $gte: [{ $toDouble: "$price" }, Number(minPrice)]
+    });
+  }
 
-    // Ownership
-    if (ownership) {
-      filter.ownership = ownership;
-    }
+  if (maxPrice) {
+    priceConditions.push({
+      $lte: [{ $toDouble: "$price" }, Number(maxPrice)]
+    });
+  }
 
-    // Furnishing status
-    if (furnishing) {
-      filter.furnishing = furnishing;
-    }
+  filter.$expr = { $and: priceConditions };
+}
 
-    // Bedrooms & Bathrooms
-    if (bedroom) {
-      filter.bedroom = bedroom;
-    }
-    if (bathroom) {
-      filter.bathroom = bathroom;
-    }
-
-    // Price range
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    filter.$or = [
-  { npxid: { $exists: true, $ne: "" } },
-  { spid: { $exists: true, $ne: "" } }
+// REQUIRED IDS
+filter.$and = [
+  ...(filter.$and || []),
+  {
+    $or: [
+      { npxid: { $exists: true, $ne: "" } },
+      { spid: { $exists: true, $ne: "" } }
+    ]
+  }
 ];
 
     // Fetch properties using filter
-    // console.log(filter);
+    console.dir(filter, { depth: null });
 
     const properties = await Property.find(filter)
       .populate('owner', 'name mobile email -_id')
