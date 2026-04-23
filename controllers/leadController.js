@@ -42,12 +42,10 @@ export const genrateLead = async (req, res) => {
 
         const property = await Property.findById(property_id);
 
-        console.log(property.owner,'pnjasd');
 
         const projectOwner = property.owner;
         const propertyOwner = await User.findById(projectOwner)
         
-       console.log(propertyOwner,'propertyOOOOO');
        
         
         
@@ -64,7 +62,7 @@ export const genrateLead = async (req, res) => {
             ...leadData
         });
 
-        await sendLeadMail(lead, property)
+        await sendLeadMail(lead, property,propertyOwner)
 
         await sendmessage(lead,property,propertyOwner)
 

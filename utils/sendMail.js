@@ -10,10 +10,10 @@ const transporter = nodemailer.createTransport({
     }
 }); 
 
-export const sendLeadMail = async (lead,property) => {
+export const sendLeadMail = async (lead,property,propertyOwner) => {
     const mailOptions = {
         from: process.env.MAIL_USER,
-    to: '1998keshavyadav@gmail.com',
+    to: propertyOwner.email,
     subject: "New Lead Generated",
     html: `
       <h2>New Lead Details</h2>
@@ -26,7 +26,6 @@ export const sendLeadMail = async (lead,property) => {
       <p>Generated at: ${new Date().toLocaleString()}</p>
       `
     };
-    console.log(mailOptions,'mail options');
     
 
     await transporter.sendMail(mailOptions);
