@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
 }); 
 
 export const sendLeadMail = async (lead,property,propertyOwner) => {
+    console.log(propertyOwner.email,'email of owner');
     const mailOptions = {
         from: process.env.MAIL_USER,
     to: propertyOwner.email,
