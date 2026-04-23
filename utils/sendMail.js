@@ -26,6 +26,7 @@ export const sendLeadMail = async (lead,property,propertyOwner) => {
       <p>Generated at: ${new Date().toLocaleString()}</p>
       `
     };
+    console.log(propertyOwner.email,'email of owner');
     
 
     await transporter.sendMail(mailOptions);
