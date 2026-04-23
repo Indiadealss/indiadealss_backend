@@ -1,3 +1,4 @@
+import e from "express";
 import adddealerdetails from "../models/adddealerdetails.js";
 import Lead from "../models/Lead.js";
 import Property from "../models/Property.js";
@@ -25,6 +26,8 @@ export const genrateLead = async (req, res) => {
         if(existingLead){
             return res.status(200).json({ success: true,message : 'already saved' })
         }
+
+        console.log(existingLead,'existing lead')
 
         if (!property_id) {
             return res.status(400).json({ success: false, message: ' any property_id or project_id must be there ' })
@@ -61,7 +64,7 @@ export const genrateLead = async (req, res) => {
             ...leadData
         });
 
-        // await sendLeadMail(lead, property)
+        await sendLeadMail(lead, property)
 
         await sendmessage(lead,property,propertyOwner)
 

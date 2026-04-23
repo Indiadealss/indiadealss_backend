@@ -26,6 +26,8 @@ export const sendLeadMail = async (lead,property) => {
       <p>Generated at: ${new Date().toLocaleString()}</p>
       `
     };
+    console.log(mailOptions,'mail options');
+    
 
     await transporter.sendMail(mailOptions);
 };
