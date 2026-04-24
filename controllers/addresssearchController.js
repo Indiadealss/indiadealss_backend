@@ -63,7 +63,7 @@ export const addresssearch = async  (req, res) => {
       };
     });
 
-    const existingAddresses = await Mapping .find({
+    const existingAddresses = await Mapping.find({
       address:{ $in: results.map((r) => r.address.trim())},
     });
 
