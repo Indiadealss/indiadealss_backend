@@ -67,10 +67,10 @@ try {
       TemplateID:"1707177193264120820"
     };
 
-    console.log("SMS API Request Params:", params);
+    // console.log("SMS API Request Params:", params);
 
     const response = await axios.get(url, {params})
-    console.log(response);
+    // console.log(response);
     
     
     return response

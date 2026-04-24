@@ -21,7 +21,7 @@ export const sendLeadMail = async (lead,property,propertyOwner) => {
       <p><b>Name:</b> ${lead.Name || "Guest"}</p>
       <p><b>Phone:</b> ${lead.PhoneNumber}</p>
       <p><b>Project:</b> ${property.projectname}</p>
-      <p><b>Purpose:</b> ${lead.purpose}</p>
+      <p><b>Purpose:</b> ${lead.purpose || "-"}</p>
       <p><b>Message:</b> ${lead.message || "-"}</p>
       <hr />
       <p>Generated at: ${new Date().toLocaleString()}</p>
