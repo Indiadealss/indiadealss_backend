@@ -521,13 +521,24 @@ const normalizedLocation = location?.toLowerCase().replace("-", " ");
 // LOCATION FILTER
 if (
   normalizedLocation &&
-  normalizedLocation !== 'all india' &&
-  normalizedLocation !== 'all'
+  normalizedLocation !== "all india" &&
+  normalizedLocation !== "all"
 ) {
   filter.$and = [
     ...(filter.$and || []),
     {
-      'location.City': { $regex: new RegExp(normalizedLocation, 'i') }
+      $or: [
+        // CASE 1: location is object
+        { "location.City": { $regex: normalizedLocation, $options: "i" } },
+        { "location.Address": { $regex: normalizedLocation, $options: "i" } },
+
+        // CASE 2: location is array
+        { "location.0.City": { $regex: normalizedLocation, $options: "i" } },
+        { "location.0.Address": { $regex: normalizedLocation, $options: "i" } },
+
+        // CASE 3: location stored as string (BAD DATA but handle it)
+        { location: { $regex: normalizedLocation, $options: "i" } }
+      ]
     }
   ];
 }

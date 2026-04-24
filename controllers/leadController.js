@@ -17,9 +17,12 @@ export const genrateLead = async (req, res) => {
         const leadIdentity = await user_id ? `USER_${user_id}`: `USER_${PhoneNumber}`;
 
         const existingLead = await Lead.findOne({
-            leadIdentity,
-            property_id
-        })
+    property_id,
+    ...(user_id 
+        ? { user_id } 
+        : { PhoneNumber }
+    )
+});
 
       
 
@@ -62,9 +65,9 @@ export const genrateLead = async (req, res) => {
             ...leadData
         });
 
-        await sendLeadMail(lead, property,propertyOwner)
+        // await sendLeadMail(lead, property,propertyOwner)
 
-        await sendmessage(lead,property,propertyOwner)
+        // await sendmessage(lead,property,propertyOwner)
 
 
 
