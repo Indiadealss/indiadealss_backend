@@ -61,7 +61,7 @@ try {
       UserID: "Deepubiz",
       Password: "ynny9542YN",
       SenderID: "BDDSRV",
-      Phno: '+919818764200',
+      Phno: '+917906518272',
       Msg: message,
       EntityID:"1701169804142775424",
       TemplateID:"1707177193264120820"
@@ -69,8 +69,10 @@ try {
 
     // console.log("SMS API Request Params:", params);
 
-    const response = await axios.get(url, {params})
-    // console.log(response);
+    const response = await axios.get(url, {params,headers: {
+    "Content-Type": "text/plain"
+  }})
+    console.log(response);
     
     
     return response

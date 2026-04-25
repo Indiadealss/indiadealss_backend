@@ -15,6 +15,7 @@ export const getycrmhomepage = async (req,res) => {
         res.status(200).json({
       data: data,
     });
+        console.log(data,'data is present');
         
     } catch (error) {
     console.error(error);
