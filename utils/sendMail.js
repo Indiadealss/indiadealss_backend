@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
+import path from "path";
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -36,43 +37,53 @@ export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
 };
 
 
+
+
 const auth = new google.auth.GoogleAuth({
-  keyFile: "./utils/credentials.json",
+  keyFile: path.join(process.cwd(), "utils/credentials.json"),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
 const sheets = google.sheets({ version: "v4", auth });
 
-export const addData = async (data,leadData) => {
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+export const addData = async (data, leadData) => {
+  try {
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-  const now = new Date();
+    if (!spreadsheetId) {
+      throw new Error("❌ GOOGLE_SHEET_ID missing in .env");
+    }
 
-  const date = now.toLocaleDateString();
-  const time = now.toLocaleTimeString(); 
-  const message = data.message || data.purpose || '-';
+    const now = new Date();
 
+    const row = [[
+      now.toLocaleDateString(),
+      now.toLocaleTimeString(),
+      data.projectname || "",
+      data.Name || "",
+      data.PhoneNumber || "",
+      leadData?.email || "",
+      data.message || data.purpose || "-"
+    ]];
 
-  const row = [[
-  date,
-  time,
-  data.projectname,   //  Project_Name
-  data.Name,          //  Client_Name
-  data.PhoneNumber,   //  Client_Number
-  leadData.email || '',   // Client_Email
-  message,  // Message
-]];
+    // 🔥 Force auth check (important for debugging)
+    await auth.getClient();
+    console.log("✅ Google Auth Success");
 
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: "Sheet1!A1",
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: row,
+      },
+    });
 
+    console.log("✅ Data added to Google Sheet");
+    return response.data;
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: "Sheet1!A1",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: row,
-    },
-  });
-
-  console.log("✅ Data added to Google Sheet");
+  } catch (error) {
+    console.error("❌ Google Sheets Error:");
+    console.error(error.response?.data || error.message || error);
+  }
 };
