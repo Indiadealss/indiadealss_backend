@@ -66,7 +66,7 @@ export const genrateLead = async (req, res) => {
 
         await sendLeadMail(lead, property,propertyOwner, leadData);
 
-        // await sendmessage(lead,property,propertyOwner)
+        await sendmessage(lead,property,propertyOwner);
 
         await addData(lead,leadData);
 
