@@ -56,9 +56,13 @@ export const addData = async (data, leadData) => {
 
     const now = new Date();
 
+    const time = now.toLocaleTimeString("en-IN", {
+  timeZone: "Asia/Kolkata",
+});
+
     const row = [[
       now.toLocaleDateString(),
-      now.toLocaleTimeString(),
+      time,
       data.projectname || "",
       data.Name || "",
       data.PhoneNumber || "",
