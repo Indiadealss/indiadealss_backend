@@ -4,7 +4,7 @@ import Lead from "../models/Lead.js";
 import Property from "../models/Property.js";
 import User from "../models/User.js";
 import { sendmessage } from "../utils/otpHelper.js";
-import { sendLeadMail } from "../utils/sendMail.js";
+import { addData, sendLeadMail } from "../utils/sendMail.js";
 
 
 export const genrateLead = async (req, res) => {
@@ -12,8 +12,7 @@ export const genrateLead = async (req, res) => {
 
         let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
 
-        console.log(req.body)
-
+        console.log(leadData,'lead data');
         const leadIdentity = await user_id ? `USER_${user_id}`: `USER_${PhoneNumber}`;
 
         const existingLead = await Lead.findOne({
@@ -65,9 +64,11 @@ export const genrateLead = async (req, res) => {
             ...leadData
         });
 
-        await sendLeadMail(lead, property,propertyOwner)
+        await sendLeadMail(lead, property,propertyOwner, leadData);
 
-        await sendmessage(lead,property,propertyOwner)
+        // await sendmessage(lead,property,propertyOwner)
+
+        await addData(lead,leadData);
 
 
 
