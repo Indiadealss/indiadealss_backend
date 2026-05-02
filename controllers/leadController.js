@@ -25,9 +25,9 @@ export const genrateLead = async (req, res) => {
 
       
 
-        if(existingLead){
-            return res.status(200).json({ success: true,message : 'already saved' })
-        }
+        // if(existingLead){
+        //     return res.status(200).json({ success: true,message : 'already saved' })
+        // }
 
         console.log(existingLead,'existing lead')
 
