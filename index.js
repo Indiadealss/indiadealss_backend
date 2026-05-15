@@ -40,7 +40,8 @@ const allowedOrigins = [
   "https://brandsdoor.in",
   "https://www.brandsdoor.in",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
-  "http://localhost:3000"    // 🔥 ADD THIS (react)
+  "http://localhost:3000" ,   // 🔥 ADD THIS (react)
+  "http://192.168.1.34:5000"
 ];
 
 app.use(cors({

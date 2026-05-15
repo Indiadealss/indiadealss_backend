@@ -82,3 +82,39 @@ try {
     throw new Error("Falled to send otp: " + err.message)
   }
 };
+
+
+export const sendHompagemessage = async (lead,leadData) => {
+  
+    
+    
+try {
+   const message = `Hi, there is an enquiry to buy property in ${lead.projectname}. Here are the buyer contact details: ${lead.Name} +91-${lead.PhoneNumber}. Team BRANDSDOOR.`;
+
+   
+    const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
+    const params = {
+      UserID: "Deepubiz",
+      Password: "ynny9542YN",
+      SenderID: "BDDSRV",
+      Phno: '+917906518272',
+      Msg: message,
+      EntityID:"1701169804142775424",
+      TemplateID:"1707177193264120820"
+    };
+
+    // console.log("SMS API Request Params:", params);
+
+    const response = await axios.get(url, {params,headers: {
+    "Content-Type": "text/plain"
+  }})
+    console.log(response);
+    
+    
+    return response
+    
+  } catch (err) {
+    console.error("Error while sending sms:", err.message);
+    throw new Error("Falled to send otp: " + err.message)
+  }
+};

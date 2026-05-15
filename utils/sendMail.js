@@ -36,7 +36,29 @@ export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
     await transporter.sendMail(mailOptions);
 };
 
+export const sendMailmessage = async (data, leadData) => {
 
+  console.log(data, leadData, 'hello sir');
+  
+  const mailOptions = {
+        from: process.env.MAIL_USER,
+        to: 'brandsdoor.in@gmail.com',
+        subject: "New Lead Generated",
+        html: `
+      <h2>New Lead Details</h2>
+      <p><b>Name:</b> ${data.Name || "Guest"}</p>
+      <p><b>Phone:</b> ${data.PhoneNumber}</p>
+      <p><b>Email:</b> ${leadData.email || "-"}</p>
+      <p><b>Project:</b> ${data.projectname}</p>
+      <p><b>Purpose:</b> ${data.requirement || "-"}</p>
+      <p><b>Message:</b> ${data.message || "-"}</p>
+      <hr />
+      <p>Generated at: ${new Date().toLocaleString()}</p>
+      `
+    };
+    await transporter.sendMail(mailOptions);
+    
+}
 
 
 const auth = new google.auth.GoogleAuth({
@@ -60,6 +82,7 @@ export const addData = async (data, leadData) => {
   timeZone: "Asia/Kolkata",
 });
 
+  console.log(leadData,'leadData')
     const row = [[
       now.toLocaleDateString(),
       time,
@@ -76,6 +99,53 @@ export const addData = async (data, leadData) => {
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
+      range: "Sheet1!A1",
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: row,
+      },
+    });
+
+    console.log("✅ Data added to Google Sheet");
+    return response.data;
+
+  } catch (error) {
+    console.error("❌ Google Sheets Error:");
+    console.error(error.response?.data || error.message || error);
+  }
+};
+
+export const addHomeData = async (data, leadData) => {
+  try {
+    const spreadsheetIdHome = process.env.Home_page_SHEET_ID;
+
+    if (!spreadsheetIdHome) {
+      throw new Error("❌ Home_page_SHEET_ID missing in .env");
+    }
+
+    const now = new Date();
+
+    const time = now.toLocaleTimeString("en-IN", {
+  timeZone: "Asia/Kolkata",
+});
+
+  console.log(leadData,'leadData')
+    const row = [[
+      now.toLocaleDateString(),
+      time,
+      data.projectname || "",
+      data.Name || "",
+      data.PhoneNumber || "",
+      leadData?.email || "",
+      data.message ||  "-"
+    ]];
+
+    // 🔥 Force auth check (important for debugging)
+    await auth.getClient();
+    console.log("✅ Google Auth Success");
+
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId: spreadsheetIdHome,
       range: "Sheet1!A1",
       valueInputOption: "USER_ENTERED",
       requestBody: {

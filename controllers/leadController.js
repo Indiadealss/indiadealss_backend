@@ -3,8 +3,8 @@ import adddealerdetails from "../models/adddealerdetails.js";
 import Lead from "../models/Lead.js";
 import Property from "../models/Property.js";
 import User from "../models/User.js";
-import { sendmessage } from "../utils/otpHelper.js";
-import { addData, sendLeadMail } from "../utils/sendMail.js";
+import { sendHompagemessage, sendmessage } from "../utils/otpHelper.js";
+import { addData, addHomeData, sendLeadMail, sendMailmessage } from "../utils/sendMail.js";
 
 
 export const genrateLead = async (req, res) => {
@@ -59,8 +59,8 @@ export const genrateLead = async (req, res) => {
             projectOwner,
             Name,
             PhoneNumber,
-            spid: property.spid,
-            npxid: property.npxid,
+            spid: property.spid || '',
+            npxid: property.npxid || '',
             ...leadData
         });
 
@@ -79,6 +79,34 @@ export const genrateLead = async (req, res) => {
     }
 };
 
+export const genrateLeadMessage = async (req, res) => {
+    try {
+
+        let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
+
+
+        const lead = {
+      user_id,
+      property_id,
+      PhoneNumber,
+      Name,
+      ...leadData,
+    };
+
+        await sendMailmessage(lead , leadData);
+
+        await sendHompagemessage(lead,leadData);
+
+        await addHomeData(lead,leadData);
+
+
+
+        res.status(201).json({ success: true, "lead": leadData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server Error', error: err.message });
+    }
+};
 
 
 
