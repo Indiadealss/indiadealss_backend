@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames } from "../controllers/propertyController.js";
+import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames, getAllProjects } from "../controllers/propertyController.js";
 import upload from "../config/multers3.js";
 //import sessionMiddleware from "../middleware/sessionMiddleware.js";
 
@@ -33,5 +33,6 @@ router.put("/publishProperty/:id", publishProperty);
 router.delete("/image/:id/:imageId", deleteImage);
 router.delete("/video/:id/:videoId", deleteVideo);
 router.get("/propertyName",getProjectNames);
+router.get("/getAllProjects",getAllProjects)
 
 export default router;

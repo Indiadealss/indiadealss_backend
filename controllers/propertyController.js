@@ -724,3 +724,124 @@ export const getPropertyByspid = async (req, res) => {
 };
 
 
+export const getAllProjects = async (req, res) => {
+  try {
+
+    const {
+      page = 1,
+      limit = 12,
+      city,
+      propertyType,
+      status,
+      search,
+    } = req.query;
+
+    let query = {
+      npxid: { $exists: true, $ne: "" },
+      purpose: "Project",
+    };
+
+    // CITY
+    if (city && city !== "All") {
+
+      query.$or = [
+        {
+          "location.City": {
+            $regex: city,
+            $options: "i",
+          },
+        },
+        {
+          location: {
+            $regex: city,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+  // PROPERTY TYPE
+if (
+  propertyType &&
+  propertyType !== "All"
+) {
+  query.property = {
+    $regex: propertyType,
+    $options: "i",
+  };
+}
+
+    // STATUS
+    if (status && status !== "All") {
+      query.availabestatus = {
+        $regex: status,
+        $options: "i",
+      };
+    }
+
+    // SEARCH
+    if (search) {
+
+      query.$and = [
+        ...(query.$and || []),
+
+        {
+          $or: [
+            {
+              projectname: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+          ],
+        },
+      ];
+    }
+
+    const skip =
+      (Number(page) - 1) * Number(limit);
+
+    const projects = await Property.find(query)
+      .select(`
+        projectname
+        projecttitle
+        location
+        property
+        images
+        price
+        propertyType
+        availabestatus
+        description
+        npxid
+      `)
+      .skip(skip)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
+
+    const totalProjects =
+      await Property.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+
+      pagination: {
+        currentPage: Number(page),
+        totalPages: Math.ceil(
+          totalProjects / limit
+        ),
+        totalProjects,
+      },
+
+      data: projects,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
