@@ -1,11 +1,12 @@
 import express from "express";
-import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames, getAllProjects } from "../controllers/propertyController.js";
+import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames, getAllProjects, getOnlyProperties } from "../controllers/propertyController.js";
 import upload from "../config/multers3.js";
 //import sessionMiddleware from "../middleware/sessionMiddleware.js";
 
 const router = express.Router();
 
 router.get("/getAllProperties",  getAllProperties);
+router.get("/getOnlyProperties",getOnlyProperties);
 router.post("/createProperty",
      upload.fields([
       {name:"images",maxCount:30},

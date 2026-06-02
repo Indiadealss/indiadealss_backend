@@ -634,6 +634,160 @@ filter.$and = [
   }
 };
 
+export const getOnlyProperties = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const slug = req.query.slug || '';
+
+    const filterForm= req.body;
+
+    console.log(page,'this is the filter form');
+    
+
+    console.log(slug);
+    
+
+
+    const {
+      location = '',
+      projectname = '',
+      purpose = '',
+      property = '',
+      propertytype = '',
+      ownership = '',
+      furnishing = '',
+      minPrice = '',
+      maxPrice = '',
+      bedroom = '',
+      bathroom = '',
+    } = req.query;
+
+    // Build a dynamic filter object
+    const filter = {};
+
+    console.log(location,'this is the location');
+    
+
+  // NORMALIZE LOCATION
+const normalizedLocation = location?.toLowerCase().replace("-", " ");
+
+// LOCATION FILTER
+if (
+  normalizedLocation &&
+  normalizedLocation !== "all india" &&
+  normalizedLocation !== "all"
+) {
+  filter.$and = [
+    ...(filter.$and || []),
+    {
+      $or: [
+        // CASE 1: location is object
+        { "location.City": { $regex: normalizedLocation, $options: "i" } },
+        { "location.Address": { $regex: normalizedLocation, $options: "i" } },
+
+        // CASE 2: location is array
+        { "location.0.City": { $regex: normalizedLocation, $options: "i" } },
+        { "location.0.Address": { $regex: normalizedLocation, $options: "i" } },
+
+        // CASE 3: location stored as string (BAD DATA but handle it)
+        { location: { $regex: normalizedLocation, $options: "i" } }
+      ]
+    }
+  ];
+}
+
+// PURPOSE
+if (purpose) {
+  filter.purpose = purpose;
+}
+
+// PROPERTY
+if (property) {
+  const typesArray = property.split(',').map(v => v.trim());
+  filter.property = {
+    $in: typesArray.map(v => new RegExp(`^${v}$`, 'i'))
+  };
+}
+
+// PROPERTY TYPE (FIXED)
+if (propertytype) {
+  const typesArray = propertytype.split(',').map(v => v.trim());
+  filter.propertyType = {
+    $in: typesArray.map(v => new RegExp(`^${v}$`, 'i'))
+  };
+}
+
+// PRICE
+if (minPrice || maxPrice) {
+  const priceConditions = [];
+
+  if (minPrice) {
+    priceConditions.push({
+      $gte: [{ $toDouble: "$price" }, Number(minPrice)]
+    });
+  }
+
+  if (maxPrice) {
+    priceConditions.push({
+      $lte: [{ $toDouble: "$price" }, Number(maxPrice)]
+    });
+  }
+
+  filter.$expr = { $and: priceConditions };
+}
+
+// REQUIRED IDS
+filter.$and = [
+  ...(filter.$and || []),
+  {
+    $or: [
+      { spid: { $exists: true, $ne: "" } }
+    ]
+  }
+];
+
+    // Fetch properties using filter
+    console.dir(filter, { depth: null });
+
+    const properties = await Property.find(filter)
+      .populate('owner', 'name mobile email -_id')
+      .populate("Buldingfeature", "name icon")
+      .populate("amenitie", "name icon label")
+      .populate("addFeature", "name icon label")
+      .populate("propertyfeature", "name icon label")
+      .populate("overlo","name label icon")
+      .populate("otherrooms", "name label icon")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Property.countDocuments(filter);
+
+    // console.log("TOTAL PROPERTIES FOUND:", properties, total);
+    // console.log("PROPERTIES FETCHED IN THIS PAGE:", properties.length);
+
+    res.status(200).json({
+      data: properties,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message })
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.errors
+      })
+    }
+  }
+};
+
 
 export const getProjectNames = async (req, res) => {
   try {
