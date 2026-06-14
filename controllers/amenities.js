@@ -13,6 +13,12 @@ export const createamenities = async (req,res) => {
             return res.status(400).json({success:false,message: "icon must be there"})
         }
 
+        // this is the file key
+        const fileKey = req.file.key;
+
+        const cloudfrontURL = `https://d3eoh63gynpjzh.cloudfront.net/${fileKey}`;
+        
+
         const iconURL = req.file.location; // url
 
         const exist = await Amenities.findOne({name});
@@ -24,7 +30,7 @@ export const createamenities = async (req,res) => {
         const amenities = await Amenities.create({
             name,
             label:name,
-            icon:iconURL,
+            icon:cloudfrontURL,
         })
 
         res.status(201).json({
