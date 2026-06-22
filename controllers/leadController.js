@@ -59,6 +59,7 @@ export const genrateLead = async (req, res) => {
             projectOwner,
             Name,
             PhoneNumber,
+            Requirements: leadData.Requirements || 'N/A',
             spid: property.spid || '',
             npxid: property.npxid || '',
             ...leadData

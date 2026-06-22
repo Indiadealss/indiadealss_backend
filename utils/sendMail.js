@@ -15,16 +15,16 @@ const transporter = nodemailer.createTransport({
 export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
     console.log(propertyOwner.email,'email of owner',process.env.MAIL_USER,'mail user');
     const mailOptions = {
-        from: process.env.MAIL_USER,
+        from: `"${property.projectname}" <${process.env.MAIL_USER}>`,
     to: "indiadealsgroup@gmail.com",
-    subject: "New Lead Generated",
+    subject: ` New Lead from ${lead.Name}`,
     html: `
       <h2>New Lead Details</h2>
       <p><b>Name:</b> ${lead.Name || "Guest"}</p>
       <p><b>Phone:</b> ${lead.PhoneNumber}</p>
       <p><b>Email:</b> ${leadData.email || "-"}</p>
       <p><b>Project:</b> ${property.projectname}</p>
-      <p><b>Purpose:</b> ${lead.purpose || "-"}</p>
+      <p><b>Requirements:</b> ${lead.requirements || "-"}</p>
       <p><b>Message:</b> ${lead.message || "-"}</p>
       <hr />
       <p>Generated at: ${new Date().toLocaleString()}</p>
@@ -41,16 +41,16 @@ export const sendMailmessage = async (data, leadData) => {
   console.log(data, leadData, 'hello sir');
   
   const mailOptions = {
-        from: process.env.MAIL_USER,
+        from: `"${data.projectname}" <${process.env.MAIL_USER}>`,
         to: 'indiadealsgroup@gmail.com',
-        subject: "New Lead Generated",
+        subject: ` New Lead from ${data.Name}`,
         html: `
       <h2>New Lead Details</h2>
       <p><b>Name:</b> ${data.Name || "Guest"}</p>
       <p><b>Phone:</b> ${data.PhoneNumber}</p>
       <p><b>Email:</b> ${leadData.email || "-"}</p>
       <p><b>Project:</b> ${data.projectname}</p>
-      <p><b>Purpose:</b> ${data.requirement || "-"}</p>
+      <p><b>Requirements:</b> ${leadData.requirements || "-"}</p>
       <p><b>Message:</b> ${data.message || "-"}</p>
       <hr />
       <p>Generated at: ${new Date().toLocaleString()}</p>
