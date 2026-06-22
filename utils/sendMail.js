@@ -42,7 +42,7 @@ export const sendMailmessage = async (data, leadData) => {
   
   const mailOptions = {
         from: process.env.MAIL_USER,
-        to: 'brandsdoor.in@gmail.com',
+        to: 'indiadealsgroup@gmail.com',
         subject: "New Lead Generated",
         html: `
       <h2>New Lead Details</h2>
