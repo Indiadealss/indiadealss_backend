@@ -97,7 +97,7 @@ try {
       UserID: "Deepubiz",
       Password: "ynny9542YN",
       SenderID: "BDDSRV",
-      Phno: '+917906518272',
+      Phno: '+919818763100',
       Msg: message,
       EntityID:"1701169804142775424",
       TemplateID:"1707177193264120820"
