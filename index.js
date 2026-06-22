@@ -39,6 +39,8 @@ app.use(cookieParser());
 const allowedOrigins = [
   "https://brandsdoor.in",
   "https://www.brandsdoor.in",
+  "https://indiadealsgroup.com",
+  "https://www.indiadealsgroup.com",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
   "http://localhost:3000" ,   // 🔥 ADD THIS (react)
   "http://192.168.1.34:5000"

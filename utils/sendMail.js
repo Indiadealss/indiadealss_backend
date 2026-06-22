@@ -16,7 +16,7 @@ export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
     console.log(propertyOwner.email,'email of owner',process.env.MAIL_USER,'mail user');
     const mailOptions = {
         from: process.env.MAIL_USER,
-    to: propertyOwner.email,
+    to: "1998keshavyadav@gmail.com",
     subject: "New Lead Generated",
     html: `
       <h2>New Lead Details</h2>
