@@ -24,17 +24,19 @@ export const sendOtpSms = async (mobile) => {
     const otp = Math.floor(1000 + Math.random() * 9000);
     otpStore[mobile] = otp;
 try {
-   const message = `OTP for login into BRANDSDOOR is ${otp}. Do not share it with anyone.`;
+   const message = `Your verification OTP is ${otp}. Please do not share it with anyone.
+
+- Team IndiaDeals Group`;
 
     const url = "http://nimbusit.biz/api/SmsApi/SendSingleApi"
     const params = {
-      UserID: "Deepubiz",
-      Password: "ynny9542YN",
-      SenderID: "BDDSRV",
+      UserID: "DSIbiz",
+      Password: "Gi5u?R?b",
+      SenderID: "INDLS",
       Phno: mobile,
       Msg: message,
-      EntityID:"1701169804142775424",
-      TemplateID:"1707177191994455532"
+      EntityID:"1701176562792196286",
+      TemplateID:"1707177243494066051"
     };
 
     const response = await axios.get(url, {params})
@@ -61,7 +63,7 @@ try {
       UserID: "Deepubiz",
       Password: "ynny9542YN",
       SenderID: "BDDSRV",
-      Phno: '+917906518272',
+      Phno: '+919818763100',
       Msg: message,
       EntityID:"1701169804142775424",
       TemplateID:"1707177193264120820"

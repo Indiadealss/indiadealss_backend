@@ -5,13 +5,47 @@ import Lead from "../models/Lead.js";
 export const getycrmhomepage = async (req,res) => {
     try {
         const id = req.query.id || '';
+
+        const now = new Date();
+
+        // First day of current month
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // First day of Next month
+        const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() +1, 1)
         
         // const leads = await Lead.countDocuments({owner:id})
         const propertyDetails = await Property.find({owner:id})
+        const totalListings = await Property.countDocuments({
+  owner: id,
+});
+        const activeListings = await Property.countDocuments({
+  owner: id,
+   $or: [
+    { npxid: { $exists: true, $nin: [null, ""] } },
+    { spid: { $exists: true, $nin: [null, ""] } }
+  ]
+});
         let data = [];
-        const leadsdetails = await Lead.find({projectOwner:id})
+        const leadsdetails = await Lead.find({
+          projectOwner:id,
+          createdAt: {
+            $gte: startOfMonth,
+            $lt: startOfNextMonth,
+          }
+        })
+
+        const stats = {
+          totalListings: totalListings,
+          activeListings: activeListings,
+          activeListingsPct: '100%',
+          totalLeads: leadsdetails.length,
+          savedProperties: 0,
+          unreadMessages:0,
+
+        }
         console.log(propertyDetails.length);
-        data.push(propertyDetails,leadsdetails)
+        data.push(propertyDetails,leadsdetails,stats)
         res.status(200).json({
       data: data,
     });
