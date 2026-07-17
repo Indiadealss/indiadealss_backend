@@ -14,15 +14,18 @@ import animitiesRoutes from "./routes/animitiesRoutes.js";
 import rooms from "./routes/otheroomRoutes.js";
 import propertyfeature from "./routes/propertyfeatureRoutes.js";
 import additionalfeature from "./routes/additionalfeatureRoutes.js";
-import overlookingfeature from "./routes/overlookingRoutes.js"
+import overlookingfeature from "./routes/overlookingRoutes.js";
 import pictureadd from "./routes/pictureRoutes.js";
 import leaduserRoute from "./routes/gestLeadRoutes.js";
 import adddealerRoute from "./routes/adddealerRoutes.js";
-import upcomingadd from "./routes/upcomingRoutes.js"
-import mycrmhomepageRoute from "./routes/mycrmhomepageRoutes.js"
-import shortlistRoutes from "./routes/shortListRoutes.js"
-import viewedRoutes from "./routes/viewedListRoutes.js"
-import connectedRoutes from './routes/connectedRoutes.js'
+import upcomingadd from "./routes/upcomingRoutes.js";
+import mycrmhomepageRoute from "./routes/mycrmhomepageRoutes.js";
+import shortlistRoutes from "./routes/shortListRoutes.js";
+import viewedRoutes from "./routes/viewedListRoutes.js";
+import connectedRoutes from './routes/connectedRoutes.js';
+import notificationsRoutes from './routes/notificationsRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -37,8 +40,6 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
-  "https://brandsdoor.in",
-  "https://www.brandsdoor.in",
   "https://indiadealsgroup.com",
   "https://www.indiadealsgroup.com",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
@@ -76,6 +77,9 @@ app.use("/api/mycrmhomepage",mycrmhomepageRoute);
 app.use("/api/shortlist", shortlistRoutes);
 app.use("/api/viewed", viewedRoutes);
 app.use("/api/connect", connectedRoutes);
+app.use("/api/getAllnotification", notificationsRoutes);
+app.use("/api/getmessages", messageRoutes);
+app.use("/api/blogs",blogRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 

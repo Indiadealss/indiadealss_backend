@@ -35,6 +35,13 @@ export const getycrmhomepage = async (req,res) => {
           }
         })
 
+        const totalLeads = await Lead.find({
+          projectOwner:id,
+        })
+        .populate('property_id', 'projectname bathroom apartment_name availabestatus balconies property propertyType');
+
+        console.log(totalLeads, 'total leads are present');
+
         const stats = {
           totalListings: totalListings,
           activeListings: activeListings,
@@ -44,12 +51,11 @@ export const getycrmhomepage = async (req,res) => {
           unreadMessages:0,
 
         }
-        console.log(propertyDetails.length);
-        data.push(propertyDetails,leadsdetails,stats)
+
+        data.push(propertyDetails,leadsdetails,totalLeads, stats)
         res.status(200).json({
       data: data,
     });
-        console.log(data,'data is present');
         
     } catch (error) {
     console.error(error);
@@ -103,6 +109,10 @@ export const getAlllistingWithleads = async (req, res) => {
     const propertyDetails = await Property.find(query)
       .skip(skip)
       .limit(limit);
+
+    const leads = await Lead.find({ projectOwner: id });
+
+    console.log(leads, 'leads are present');
 
     res.status(200).json({
       total: propertyCount,

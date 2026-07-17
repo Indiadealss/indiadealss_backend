@@ -5,6 +5,7 @@ import Property from "../models/Property.js";
 import User from "../models/User.js";
 import { sendHompagemessage, sendmessage } from "../utils/otpHelper.js";
 import { addData, addHomeData, sendLeadMail, sendMailmessage } from "../utils/sendMail.js";
+import notificationsMaping from "../models/Notifications.js";
 
 
 export const genrateLead = async (req, res) => {
@@ -49,7 +50,7 @@ export const genrateLead = async (req, res) => {
         const propertyOwner = await User.findById(projectOwner)
         
        
-        
+   
         
 
         const lead = await Lead.create({
@@ -64,10 +65,20 @@ export const genrateLead = async (req, res) => {
             npxid: property.npxid || '',
             ...leadData
         });
+         console.log("Lead:", lead);
 
-        await sendLeadMail(lead, property,propertyOwner, leadData);
+        // const notificationCreate = await notificationsMaping.create({
+        //     name: 'Lead',
+        //     status: 'new',
+        //     message: '',
+        //     id: lead._id
+        // })
 
-        await sendmessage(lead,property,propertyOwner);
+        // console.log(notificationCreate, 'notify');
+
+        // await sendLeadMail(lead, property,propertyOwner, leadData);
+
+        // await sendmessage(lead,property,propertyOwner);
 
         await addData(lead,leadData);
 
@@ -85,22 +96,40 @@ export const genrateLeadMessage = async (req, res) => {
 
         let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
 
+                const property = await Property.findById(property_id);
 
-        const lead = {
+
+        const projectOwner = property.owner;
+        const propertyOwner = await User.findById(projectOwner)
+
+
+        const lead = await Lead.create({
       user_id,
       property_id,
+      projectOwner,
       PhoneNumber,
       Name,
       ...leadData,
-    };
+    });
 
-        await sendMailmessage(lead , leadData);
+        // await sendMailmessage(lead , leadData);
 
-        await sendHompagemessage(lead,leadData);
+        // await sendHompagemessage(lead,leadData);
 
-        await addHomeData(lead,leadData);
+        // await addHomeData(lead,leadData);
+        await lead.save();
 
+         console.log("Lead:", lead._id);
 
+        const notificationCreate = await notificationsMaping.create({
+            name: 'Lead',
+            status: 'new',
+            message: '',
+            id: lead._id
+        })
+
+        console.log(notificationCreate, 'let see What happen now');
+        
 
         res.status(201).json({ success: true, "lead": leadData });
     } catch (err) {
