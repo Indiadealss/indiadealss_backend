@@ -51,37 +51,15 @@ const CampaignSchema = new mongoose.Schema(
 
     // Media Upload (populated from multer file info)
     brokerLogo: {
-      filename: { 
-        type: String 
-    },
-      path: { 
-        type: String 
-    }, // relative path/URL for serving the file
-      mimetype: { 
-        type: String 
-    },
-      size: { 
-        type: Number 
-    },
+      type: String,
     },
     promotionalVideo: {
-      filename: { 
-        type: String 
-    },
-      path: { 
-        type: String 
-    },
-      mimetype: { 
-        type: String 
-    },
-      size: { 
-        type: Number 
-    },
+      type: String,
     },
 
     // Campaign Details
     description: { 
-        type: String, 
+        type: String,
         trim: true 
     },
     startDate: { 
@@ -98,4 +76,6 @@ const CampaignSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Campaign", CampaignSchema);
+const campain = mongoose.model("Campaign", CampaignSchema);
+
+export default campain;

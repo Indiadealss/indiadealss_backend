@@ -26,6 +26,7 @@ import connectedRoutes from './routes/connectedRoutes.js';
 import notificationsRoutes from './routes/notificationsRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import campainRoutes from './routes/campainRoutes.js'
 
 dotenv.config();
 connectDB();
@@ -80,6 +81,7 @@ app.use("/api/connect", connectedRoutes);
 app.use("/api/getAllnotification", notificationsRoutes);
 app.use("/api/getmessages", messageRoutes);
 app.use("/api/blogs",blogRoutes);
+app.use("/api/campain",campainRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
