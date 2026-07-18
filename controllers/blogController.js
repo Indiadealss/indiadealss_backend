@@ -90,10 +90,10 @@ export const getBlogById = async (req, res) => {
     
     const location = req.params.slug;
 
-    const slug = `/blog/${location}`
-    console.log(slug, 'slug is defined');
+    const slugLink = `/blog/${location}`
+    console.log(slugLink, 'slug is defined');
     
-    const blog = await Blog.findOne({slug});
+    const blog = await Blog.findOne({slugLink});
     if (!blog) {
       return res.status(404).json({ success: false, message: "Blog not found" });
     }

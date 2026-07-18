@@ -792,7 +792,7 @@ filter.$and = [
 export const getProjectNames = async (req, res) => {
   try {
     const projects = await Property.find({ npxid: { $exists: true, $ne: "" } })
-      .select("projectname location npxid availabestatus"); // only project name
+      .select("projectname location npxid availabestatus property"); // only project name
 
       console.log(projects);
       
