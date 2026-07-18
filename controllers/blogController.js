@@ -20,7 +20,7 @@ export const createBlog = async (req, res) => {
     const fileKey = `https://d3eoh63gynpjzh.cloudfront.net/${req.files.thumbnail?.[0].key}`;
     const coverFileKey =`https://d3eoh63gynpjzh.cloudfront.net/${req.files.cover?.[0].key}`;
 
-    let slugLink = `/blog/slug${links}`
+    let slugLink = `blog/slug${links}`
 
     if (typeof links === "string") {
   links = JSON.parse(links);
@@ -31,7 +31,8 @@ export const createBlog = async (req, res) => {
 
     const blog = await Blog.create({
       blogName,
-      slug:slugLink,
+      slug,
+      slugLink,
       category,
       description,
       content,
@@ -47,7 +48,10 @@ export const createBlog = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating blog:", error);
-
+     console.log("Error Code:", error.code);
+  console.log("Key Pattern:", error.keyPattern);
+  console.log("Key Value:", error.keyValue);
+  console.log(error);
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
