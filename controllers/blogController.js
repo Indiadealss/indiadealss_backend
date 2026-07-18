@@ -20,7 +20,7 @@ export const createBlog = async (req, res) => {
     const fileKey = `https://d3eoh63gynpjzh.cloudfront.net/${req.files.thumbnail?.[0].key}`;
     const coverFileKey =`https://d3eoh63gynpjzh.cloudfront.net/${req.files.cover?.[0].key}`;
 
-    let slugLink = `blog/slug${links}`
+    let slugLink = `/blog/slug${links}`
 
     if (typeof links === "string") {
   links = JSON.parse(links);
