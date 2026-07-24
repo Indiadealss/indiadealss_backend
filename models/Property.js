@@ -60,6 +60,15 @@ const PropertySchema = new mongoose.Schema({
       type:String
     },
    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+   approvalStatus:{
+     type:String,
+     enum:['pending','approved','rejected'],
+     default:'pending'
+   },
+   rejectionReason:{
+     type:String,
+     default:''
+   },
    Buldingfeature:[{type: mongoose.Schema.Types.ObjectId, ref:'Feature'}],
    amenitie:[{type:mongoose.Schema.Types.ObjectId,ref:'Amenities'}],
    otherrooms:[{type:mongoose.Schema.Types.ObjectId,ref:'otheroom'}],

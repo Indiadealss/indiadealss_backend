@@ -18,11 +18,16 @@ const isProd = process.env.NODE_ENV === "production";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email,mobile } = req.body;
-    const exists = await User.findOne({ mobile });
-    if (exists) return res.status(400).json({ error: "Mobile Number already exists" });
-    const user = await User.create({ name, email,mobile});
-    const token = createToken(user._id);
+    const { name, email,mobile, you_are } = req.body;
+    console.log(name, email, mobile, you_are);
+    const mobileExists = await User.findOne({ mobile });
+    if (mobileExists) return res.status(400).json({ error: "Mobile Number already exists" });
+    if (email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) return res.status(400).json({ error: "Email already exists" });
+    }
+    const user = await User.create({ name, email,mobile, you_are });
+    const token = createToken(user);
 
    res.cookie("token", token, {
   httpOnly: true,
@@ -34,10 +39,11 @@ export const registerUser = async (req, res) => {
 });
 
     console.log(token,'ok');
-    
-    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email,mobile:user.mobile,token } });
+
+    res.json({ message: "User registered successfully", user: { id: user._id, name: user.name, email: user.email,mobile:user.mobile,you_are:user.you_are,token } });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    console.error("registerUser error:", err);
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 };
 
@@ -139,10 +145,16 @@ export const verifyOtp = async (req, res) => {
     });
   }
 
+  if (user.verification?.phone?.status !== 'verified') {
+    user.verification = user.verification || {};
+    user.verification.phone = { status: 'verified' };
+    await user.save();
+  }
+
   const token = createLoginToken(user._id);
 
   console.log(token,'hello');
-  
+
 
   res.cookie("token", token, {
   httpOnly: true,
@@ -179,6 +191,9 @@ export const updateuserprofile = async (req, res) => {
       company_name,
       company_url,
       phone,
+      altPhone,
+      bio,
+      location,
       company_profile,
       address,
       landline
@@ -188,27 +203,19 @@ export const updateuserprofile = async (req, res) => {
       return res.status(400).json({ success: false, message: "User ID required" });
     }
 
-    // ✅ validation (same as yours)
-    if (!you_are) return res.status(400).json({ message: "Enter who you are" });
-    if (!name) return res.status(400).json({ message: "Enter name" });
-    if (!email) return res.status(400).json({ message: "Enter email" });
-    if (!address) return res.status(400).json({ message: "Enter address" });
-
-    // ✅ safe update object
-    const updateData = {
-      you_are,
-      name,
-      email,
-      company_name,
-      company_url,
-      company_profile,
-      address,
-      phone,
-      landline
+    // ✅ only touch fields that were actually sent, so partial updates
+    // (e.g. just the bio, or just the avatar) don't wipe other fields
+    const fields = {
+      you_are, name, email, company_name, company_url,
+      company_profile, address, phone, altPhone, bio, location, landline
     };
+    const updateData = {};
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value !== undefined) updateData[key] = value;
+    });
 
     console.log(req.files);
-    
+
 
     // ✅ handle images safely
     if (req.files?.profile) {
@@ -240,3 +247,28 @@ export const updateuserprofile = async (req, res) => {
     });
   }
 };
+
+
+export const userinfo = async(req, res) => {
+  try{
+
+    const { id } = req.body;
+    const user = await User.findById({id});
+
+    const userProp = await Property.find({owner: id});
+
+    const data = {user, userProp};
+
+    return res.status(200).json({
+      sucess: true,
+      data:data
+    })
+  }catch(err){
+    console.log(err)
+
+    return res.status(500).json({
+      sucess:false,
+      message: "Server error"
+    });
+  }
+}

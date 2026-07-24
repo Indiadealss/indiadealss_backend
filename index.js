@@ -26,7 +26,10 @@ import connectedRoutes from './routes/connectedRoutes.js';
 import notificationsRoutes from './routes/notificationsRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
-import campainRoutes from './routes/campainRoutes.js'
+import campainRoutes from './routes/campainRoutes.js';
+import businessProfileRoutes from "./routes/Businessprofileroutes.js";
+import teamMemberRoutes from "./routes/Teammemberroutes.js";
+import verificationRoutes from "./routes/verificationRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -79,9 +82,12 @@ app.use("/api/shortlist", shortlistRoutes);
 app.use("/api/viewed", viewedRoutes);
 app.use("/api/connect", connectedRoutes);
 app.use("/api/getAllnotification", notificationsRoutes);
-app.use("/api/getmessages", messageRoutes);
+app.use("/api/chat", messageRoutes);
 app.use("/api/blogs",blogRoutes);
 app.use("/api/campain",campainRoutes);
+app.use("/api/business-profile", businessProfileRoutes);
+app.use("/api/team-members", teamMemberRoutes);
+app.use("/api/verification", verificationRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 

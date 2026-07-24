@@ -7,6 +7,20 @@ import { sendHompagemessage, sendmessage } from "../utils/otpHelper.js";
 import { addData, addHomeData, sendLeadMail, sendMailmessage } from "../utils/sendMail.js";
 import notificationsMaping from "../models/Notifications.js";
 
+const notifyNewLead = async ({ recipient, leadName, propertyLabel, leadId }) => {
+    if (!recipient) return;
+    try {
+        await notificationsMaping.create({
+            recipient,
+            name: `New lead from ${leadName || "a visitor"}${propertyLabel ? ` for ${propertyLabel}` : ""}`,
+            id: leadId,
+            model: "Lead",
+            status: "unread",
+        });
+    } catch (err) {
+        console.error("notifyNewLead error:", err.message);
+    }
+};
 
 export const genrateLead = async (req, res) => {
     try {
@@ -45,13 +59,16 @@ export const genrateLead = async (req, res) => {
 
         const property = await Property.findById(property_id);
 
+        if (!property) {
+            return res.status(404).json({ success: false, message: 'Property not found' });
+        }
 
         const projectOwner = property.owner;
         const propertyOwner = await User.findById(projectOwner)
-        
-       
-   
-        
+
+
+
+
 
         const lead = await Lead.create({
             user_id,
@@ -67,14 +84,12 @@ export const genrateLead = async (req, res) => {
         });
          console.log("Lead:", lead);
 
-        // const notificationCreate = await notificationsMaping.create({
-        //     name: 'Lead',
-        //     status: 'new',
-        //     message: '',
-        //     id: lead._id
-        // })
-
-        // console.log(notificationCreate, 'notify');
+        await notifyNewLead({
+            recipient: projectOwner,
+            leadName: Name,
+            propertyLabel: property.projectname,
+            leadId: lead._id,
+        });
 
         // await sendLeadMail(lead, property,propertyOwner, leadData);
 
@@ -96,8 +111,11 @@ export const genrateLeadMessage = async (req, res) => {
 
         let { user_id, property_id, PhoneNumber, Name, ...leadData } = req.body;
 
-                const property = await Property.findById(property_id);
+        const property = await Property.findById(property_id);
 
+        if (!property) {
+            return res.status(404).json({ success: false, message: 'Property not found' });
+        }
 
         const projectOwner = property.owner;
         const propertyOwner = await User.findById(projectOwner)
@@ -121,15 +139,12 @@ export const genrateLeadMessage = async (req, res) => {
 
          console.log("Lead:", lead._id);
 
-        const notificationCreate = await notificationsMaping.create({
-            name: 'Lead',
-            status: 'new',
-            message: '',
-            id: lead._id
-        })
-
-        console.log(notificationCreate, 'let see What happen now');
-        
+        await notifyNewLead({
+            recipient: projectOwner,
+            leadName: Name,
+            propertyLabel: property.projectname,
+            leadId: lead._id,
+        });
 
         res.status(201).json({ success: true, "lead": leadData });
     } catch (err) {

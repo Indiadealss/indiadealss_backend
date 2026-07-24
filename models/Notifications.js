@@ -5,6 +5,11 @@ const notificationsSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    recipient:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     id:{
         type: mongoose.Schema.Types.ObjectId,
         refPath:"model",
@@ -13,13 +18,13 @@ const notificationsSchema = new mongoose.Schema({
     model:{
         type: String,
         required:true,
-        enum: ["Lead","Property"]
+        enum: ["Lead","Property","Message"]
     },
     status:{
         type: String,
         required: true
     }
-});
+}, { timestamps: true });
 
 const notificationsMaping = mongoose.model("notificationsMapings", notificationsSchema)
 

@@ -594,6 +594,9 @@ filter.$and = [
   }
 ];
 
+// Only admin-approved properties are shown on the public site
+filter.approvalStatus = "approved";
+
     // Fetch properties using filter
     console.dir(filter, { depth: null });
 
@@ -748,6 +751,9 @@ filter.$and = [
   }
 ];
 
+// Only admin-approved properties are shown on the public site
+filter.approvalStatus = "approved";
+
     // Fetch properties using filter
     console.dir(filter, { depth: null });
 
@@ -817,7 +823,7 @@ export const getProperty = async (req, res) => {
     // const id ="68c14e6f35abf4f09e96e848"
     const { id } = req.params; // this works only if route has "/:id"
     const property = await Property.findById(id)
-      .populate("owner", "name email mobile updatedAt -_id")
+      .populate("owner", "name email mobile updatedAt")
       .populate("Buldingfeature", "name icon")
       .populate("amenitie", "name icon label");
 
@@ -839,7 +845,7 @@ export const getPropertyByRera = async (req, res) => {
     console.log(npxid);
 
     const property = await Property.findOne({ npxid })
-      .populate("owner", "name email mobile updatedAt -_id")
+      .populate("owner", "name email mobile updatedAt")
       .populate("Buldingfeature", "name icon")
       .populate("amenitie", "name icon label");
 
@@ -861,7 +867,7 @@ export const getPropertyByspid = async (req, res) => {
     console.log(spid);
 
     const property = await Property.findOne({ spid })
-      .populate("owner", "name email mobile updatedAt -_id")
+      .populate("owner", "name email mobile updatedAt")
       .populate("Buldingfeature", "name icon")
       .populate("amenitie", "name icon label")
       .populate("overlo","name label icon")
@@ -893,6 +899,7 @@ export const getAllProjects = async (req, res) => {
     let query = {
       npxid: { $exists: true, $ne: "" },
       purpose: "Project",
+      approvalStatus: "approved",
     };
 
     // CITY
@@ -996,6 +1003,78 @@ if (
       message: error.message,
     });
 
+  }
+};
+
+// ── Admin: property approval workflow ──────────────────────────────────────
+
+export const getPendingProperties = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { approvalStatus: req.query.status || "pending" };
+
+    const properties = await Property.find(filter)
+      .populate("owner", "name mobile email you_are company_name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Property.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      data: properties,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const approveProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const property = await Property.findByIdAndUpdate(
+      id,
+      { $set: { approvalStatus: "approved", rejectionReason: "" } },
+      { new: true }
+    );
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    res.status(200).json({ success: true, property });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const rejectProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason = "" } = req.body;
+
+    const property = await Property.findByIdAndUpdate(
+      id,
+      { $set: { approvalStatus: "rejected", rejectionReason: reason } },
+      { new: true }
+    );
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    res.status(200).json({ success: true, property });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

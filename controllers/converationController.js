@@ -1,59 +1,86 @@
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
+import Notification from "../models/Notifications.js";
 
+const notifyNewMessage = async ({ recipient, senderName, message }) => {
+  if (!recipient) return;
+  try {
+    await Notification.create({
+      recipient,
+      name: `New message from ${senderName || "a visitor"}`,
+      id: message._id,
+      model: "Message",
+      status: "unread",
+    });
+  } catch (err) {
+    console.error("notifyNewMessage error:", err.message);
+  }
+};
 
 export const sendMessage = async (req, res) => {
   try {
     const {
       conversationId,
       sender,
-      senderIp,
+      senderName,
       receiver,
       property_id,
       message,
       messageType,
       attachment,
+      guestName,
+      guestPhone,
     } = req.body;
 
-    
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: "Message text is required" });
+    }
 
-    if (!sender && !senderIp) {
-      return res.status(400).json({
-        success: false,
-        message: "Sender or senderIp is required",
-      });
+    const senderIp = req.ip;
+
+    if (!sender) {
+      if (!guestName || !guestPhone) {
+        return res.status(400).json({
+          success: false,
+          message: "Name and phone are required to message without logging in",
+        });
+      }
     }
 
     let conversation;
 
-    // Existing conversation
     if (conversationId) {
       conversation = await Conversation.findById(conversationId);
     }
 
-    // Create new conversation
     if (!conversation) {
+      if (!receiver) {
+        return res.status(400).json({ success: false, message: "receiver is required" });
+      }
       conversation = await Conversation.create({
         participants: sender ? [sender, receiver] : [receiver],
-        guestIp: senderIp || null,
-        property_id,
+        guestIp: sender ? null : senderIp,
+        guestName: sender ? null : guestName,
+        guestPhone: sender ? null : guestPhone,
+        property_id: property_id || undefined,
       });
     }
 
     const newMessage = await Message.create({
       conversationId: conversation._id,
-      sender,
-      senderIp,
-      receiver,
+      sender: sender || null,
+      senderIp: sender ? null : senderIp,
+      receiver: receiver || null,
       message,
-      messageType,
-      attachment,
+      messageType: messageType || "text",
+      attachment: attachment || "",
     });
-
-    
 
     conversation.lastMessage = newMessage._id;
     await conversation.save();
+
+    const displaySenderName = sender ? senderName : guestName || conversation.guestName;
+    await notifyNewMessage({ recipient: receiver, senderName: displaySenderName, message: newMessage });
 
     return res.status(201).json({
       success: true,
@@ -61,15 +88,13 @@ export const sendMessage = async (req, res) => {
       data: newMessage,
     });
   } catch (err) {
-    console.log(err);
-
+    console.error("sendMessage error:", err);
     return res.status(500).json({
       success: false,
       message: err.message,
     });
   }
 };
-
 
 export const getConversations = async (req, res) => {
   try {
@@ -78,13 +103,25 @@ export const getConversations = async (req, res) => {
     const conversations = await Conversation.find({
       participants: user_id,
     })
-      .populate("participants", "fullname email phone")
+      .populate("participants", "name email phone profile")
       .populate("lastMessage")
-      .populate("property_id", "projectname");
+      .populate("property_id", "projectname apartment_name location images spid npxid")
+      .sort({ updatedAt: -1 });
+
+    const withUnread = await Promise.all(
+      conversations.map(async (c) => {
+        const unread = await Message.countDocuments({
+          conversationId: c._id,
+          receiver: user_id,
+          isRead: false,
+        });
+        return { ...c.toObject(), unread };
+      })
+    );
 
     res.status(200).json({
       success: true,
-      data: conversations,
+      data: withUnread,
     });
   } catch (err) {
     res.status(500).json({
@@ -94,14 +131,15 @@ export const getConversations = async (req, res) => {
   }
 };
 
-
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
 
     const messages = await Message.find({
       conversationId,
-    }).sort({ createdAt: 1 });
+    })
+      .populate("sender", "name profile")
+      .sort({ createdAt: 1 });
 
     res.status(200).json({
       success: true,
@@ -115,33 +153,44 @@ export const getMessages = async (req, res) => {
   }
 };
 
-
-
 export const replyMessage = async (req, res) => {
   try {
-    const {
-      conversationId,
-      sender,
-      receiver,
-      message,
-    } = req.body;
+    const { conversationId, sender, senderName, receiver, message } = req.body;
+
+    if (!conversationId || !sender || !message || !message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "conversationId, sender and message are required",
+      });
+    }
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: "Conversation not found" });
+    }
+
+    const resolvedReceiver =
+      receiver || conversation.participants.find((p) => p.toString() !== sender.toString()) || null;
 
     const newMessage = await Message.create({
       conversationId,
       sender,
-      receiver,
+      receiver: resolvedReceiver,
       message,
     });
 
-    await Conversation.findByIdAndUpdate(conversationId, {
-      lastMessage: newMessage._id,
-    });
+    conversation.lastMessage = newMessage._id;
+    if (!conversation.participants.some((p) => p.toString() === sender.toString())) {
+      conversation.participants.push(sender);
+    }
+    await conversation.save();
+
+    await notifyNewMessage({ recipient: resolvedReceiver, senderName, message: newMessage });
 
     res.status(201).json({
       success: true,
       data: newMessage,
     });
-
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -153,22 +202,17 @@ export const replyMessage = async (req, res) => {
 export const markAsRead = async (req, res) => {
   try {
     const { conversationId } = req.params;
+    const { userId } = req.query;
 
-    await Message.updateMany(
-      {
-        conversationId,
-        isRead: false,
-      },
-      {
-        isRead: true,
-      }
-    );
+    const filter = { conversationId, isRead: false };
+    if (userId) filter.receiver = userId;
+
+    await Message.updateMany(filter, { isRead: true });
 
     res.status(200).json({
       success: true,
       message: "Messages marked as read",
     });
-
   } catch (err) {
     res.status(500).json({
       success: false,

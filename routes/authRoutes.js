@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, getMe, logoutUser, updateuserprofile } from "../controllers/authController.js";
+import { registerUser, loginUser, getMe, logoutUser, updateuserprofile, userinfo } from "../controllers/authController.js";
 import { sendOtp, verifyOtp } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import upload from "../config/multers3.js";
@@ -16,5 +16,7 @@ router.post("/updateuserprofile",upload.fields([
     {name:'logo',maxCount:1},
     {name:'profile',maxCount:1},
 ]) ,updateuserprofile);
+
+router.get("/userAllInfo", userinfo)
 
 export default router;

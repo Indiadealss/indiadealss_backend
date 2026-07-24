@@ -14,6 +14,16 @@ const conversationSchema = new mongoose.Schema(
       default: null,
     },
 
+    guestName: {
+      type: String,
+      default: null,
+    },
+
+    guestPhone: {
+      type: String,
+      default: null,
+    },
+
     property_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Property",

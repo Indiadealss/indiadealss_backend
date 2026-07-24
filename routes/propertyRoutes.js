@@ -1,9 +1,16 @@
 import express from "express";
-import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames, getAllProjects, getOnlyProperties } from "../controllers/propertyController.js";
+import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPropertyByspid, publishProperty, updateProperty, createPropertyBasic, uploadImage, uploadVideo, updateImageMeta, updatePropertyById, deleteImage, deleteVideo, getProjectNames, getAllProjects, getOnlyProperties, getPendingProperties, approveProperty, rejectProperty } from "../controllers/propertyController.js";
 import upload from "../config/multers3.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
 //import sessionMiddleware from "../middleware/sessionMiddleware.js";
 
 const router = express.Router();
+
+// Admin — property approval workflow
+router.get("/admin/pending", authMiddleware, adminMiddleware, getPendingProperties);
+router.put("/admin/:id/approve", authMiddleware, adminMiddleware, approveProperty);
+router.put("/admin/:id/reject", authMiddleware, adminMiddleware, rejectProperty);
 
 router.get("/getAllProperties",  getAllProperties);
 router.get("/getOnlyProperties",getOnlyProperties);

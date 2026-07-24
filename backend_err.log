@@ -1,0 +1,180 @@
+(node:15292) NOTE: The AWS SDK for JavaScript (v2) is in maintenance mode.
+ SDK releases are limited to address critical bug fixes and security issues only.
+
+Please migrate your code to use AWS SDK for JavaScript (v3).
+For more information, check the blog post at https://a.co/cUPnyil
+(Use `node --trace-warnings ...` to show where the warning was created)
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
+CastError: Cast to ObjectId failed for value "" (type string) at path "owner" for model "Property"
+    at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+    at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+    at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+    at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+    at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+    at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+    at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getycrmhomepage (file:///C:/Users/hp/Downloads/indiadealss_backend/indiadealss_backend/controllers/mycrmcontroller.js:18:33) {
+  stringValue: '""',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: '',
+  path: 'owner',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\bson\lib\bson.cjs:2538:23)
+      at castObjectId (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaType.applySetters (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1258:12)
+      at SchemaType.castForQuery (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\schemaType.js:1694:17)
+      at cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\cast.js:390:32)
+      at Query.cast (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:5060:12)
+      at Query._castConditions (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2374:10)
+      at model.Query._find (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:2401:8)
+      at model.Query.exec (C:\Users\hp\Downloads\indiadealss_backend\indiadealss_backend\node_modules\mongoose\lib\query.js:4627:80),
+  valueType: 'string'
+}
