@@ -21,7 +21,7 @@ export const toggleShortlist = async (req, res) => {
       });
     }
 
-    const shortlist = await shortlist.create({
+    const created = await shortlist.create({
       userId,
       propertyId,
     });
@@ -29,7 +29,7 @@ export const toggleShortlist = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Added to shortlist",
-      data: shortlist,
+      data: created,
     });
   } catch (error) {
     res.status(500).json({

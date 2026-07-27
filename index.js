@@ -30,6 +30,7 @@ import campainRoutes from './routes/campainRoutes.js';
 import businessProfileRoutes from "./routes/Businessprofileroutes.js";
 import teamMemberRoutes from "./routes/Teammemberroutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
+import featuredPropertyRoutes from "./routes/featuredPropertyRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -88,6 +89,7 @@ app.use("/api/campain",campainRoutes);
 app.use("/api/business-profile", businessProfileRoutes);
 app.use("/api/team-members", teamMemberRoutes);
 app.use("/api/verification", verificationRoutes);
+app.use("/api/featured", featuredPropertyRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
