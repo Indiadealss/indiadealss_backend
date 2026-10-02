@@ -1,4 +1,4 @@
-import AWS from "aws-sdk";
+﻿import AWS from "aws-sdk";
 import axios from "axios";
 
 //configure AWS SNS
@@ -74,7 +74,6 @@ try {
     const response = await axios.get(url, {params,headers: {
     "Content-Type": "text/plain"
   }})
-    console.log(response);
     
     
     return response
@@ -110,7 +109,6 @@ try {
     const response = await axios.get(url, {params,headers: {
     "Content-Type": "text/plain"
   }})
-    console.log(response);
     
     
     return response

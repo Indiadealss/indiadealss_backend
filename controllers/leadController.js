@@ -97,7 +97,12 @@ export const genrateLead = async (req, res) => {
             console.error("❌ Lead mail failed:", mailErr.message);
         }
 
-        // await sendmessage(lead,property,propertyOwner);
+        try {
+            const smsRes = await sendmessage(lead, property, propertyOwner);
+            console.log("✅ Lead SMS sent:", smsRes?.data);
+        } catch (smsErr) {
+            console.error("❌ Lead SMS failed:", smsErr.message);
+        }
 
         await addData(lead,leadData);
 
@@ -140,7 +145,12 @@ export const genrateLeadMessage = async (req, res) => {
             console.error("❌ Lead mail failed:", mailErr.message);
         }
 
-        // await sendHompagemessage(lead,leadData);
+        try {
+            const smsRes = await sendHompagemessage(lead, leadData);
+            console.log("✅ Lead SMS sent:", smsRes?.data);
+        } catch (smsErr) {
+            console.error("❌ Lead SMS failed:", smsErr.message);
+        }
 
         // await addHomeData(lead,leadData);
         await lead.save();
