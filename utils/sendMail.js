@@ -28,6 +28,7 @@ export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
     const mailOptions = {
         from: `"${property.projectname}" <${process.env.MAIL_USER}>`,
     to: "indiadealsgroup@gmail.com",
+    cc: "brandsdoor.in@gmail.com",
     subject: ` New Lead from ${lead.Name}`,
     html: `
       <h2>New Lead Details</h2>
@@ -53,6 +54,7 @@ export const sendMailmessage = async (data, leadData) => {
   const mailOptions = {
         from: `"${data.projectname}" <${process.env.MAIL_USER}>`,
         to: 'indiadealsgroup@gmail.com',
+        cc: 'brandsdoor.in@gmail.com',
         subject: ` New Lead from ${data.Name}`,
         html: `
       <h2>New Lead Details</h2>
