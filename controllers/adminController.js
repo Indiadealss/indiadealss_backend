@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Property from "../models/Property.js";
 import Lead from "../models/Lead.js";
 import User from "../models/User.js";
+import { ADMIN_YOU_ARE, adminFilter, isAdminUser } from "../utils/adminAccess.js";
 
 // ── Admin panel: platform-wide view of users, properties and leads ─────────────
 // Every handler here is mounted behind authMiddleware + adminMiddleware.
@@ -38,7 +39,7 @@ export const getAdminStats = async (req, res) => {
       totalLeads, leadsToday, leadsWeek,
     ] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ role: "admin" }),
+      User.countDocuments(adminFilter),
       User.countDocuments({ createdAt: { $gte: weekAgo } }),
       Property.countDocuments(),
       Property.countDocuments({ approvalStatus: "pending" }),
@@ -192,12 +193,14 @@ export const getAdminUsers = async (req, res) => {
     const { page, limit, skip } = paging(req.query);
     const { search = "", role = "" } = req.query;
 
-    const filter = {};
-    if (role) filter.role = role;
+    const conditions = [];
+    if (role === "admin") conditions.push(adminFilter);
+    if (role === "user") conditions.push({ role: { $ne: "admin" }, you_are: { $ne: ADMIN_YOU_ARE } });
     if (search.trim()) {
       const rx = new RegExp(escapeRegex(search.trim()), "i");
-      filter.$or = [{ name: rx }, { email: rx }, { mobile: rx }, { company_name: rx }];
+      conditions.push({ $or: [{ name: rx }, { email: rx }, { mobile: rx }, { company_name: rx }] });
     }
+    const filter = conditions.length ? { $and: conditions } : {};
 
     const [items, total] = await Promise.all([
       User.find(filter)
@@ -225,6 +228,7 @@ export const getAdminUsers = async (req, res) => {
 
     const data = items.map((u) => ({
       ...u,
+      role: isAdminUser(u) ? "admin" : "user", // effective role (role field or admin code)
       propertyCount: propMap[String(u._id)] || 0,
       leadCount: leadMap[String(u._id)] || 0,
     }));
@@ -247,11 +251,18 @@ export const updateAdminUserRole = async (req, res) => {
       return res.status(400).json({ success: false, message: "You cannot remove your own admin access" });
     }
 
+    const target = await User.findById(req.params.id).select("you_are");
+    if (!target) return res.status(404).json({ success: false, message: "User not found" });
+
+    // removing admin must also clear the admin code, otherwise they'd stay admin through it
+    const update = { role };
+    if (role === "user" && target.you_are === ADMIN_YOU_ARE) update.you_are = "";
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { $set: { role } },
+      { $set: update },
       { new: true }
-    ).select("name mobile email role");
+    ).select("name mobile email role you_are");
 
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
     res.status(200).json({ success: true, user });

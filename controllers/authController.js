@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { otpStore } from "../utils/otpHelper.js";
+import { canSetYouAre, isAdminUser } from "../utils/adminAccess.js";
 
 
 import { sendOtpSms } from "../utils/otpHelper.js";
@@ -20,6 +21,9 @@ export const registerUser = async (req, res) => {
   try {
     const { name, email,mobile, you_are } = req.body;
     console.log(name, email, mobile, you_are);
+    if (!canSetYouAre(you_are, undefined)) {
+      return res.status(400).json({ error: "Invalid value for 'you are'" });
+    }
     const mobileExists = await User.findOne({ mobile });
     if (mobileExists) return res.status(400).json({ error: "Mobile Number already exists" });
     if (email) {
@@ -87,9 +91,12 @@ export const getMe = async (req, res) => {
     const usedetails = await User.findById(user.user_id).select("-password");
     if(!usedetails) return res.status(401).json({message:"User not found"});
     console.log(usedetails);
-    
 
-    res.status(200).json({usedetails});
+    // expose the effective role so the frontend shows admin tabs for code-based admins too
+    const details = usedetails.toObject();
+    if (isAdminUser(details)) details.role = "admin";
+
+    res.status(200).json({ usedetails: details });
   }catch(error){
     console.error("getMe error:", error.message);
     res.status(500).json({message:"Server error",error});
@@ -201,6 +208,13 @@ export const updateuserprofile = async (req, res) => {
 
     if (!id) {
       return res.status(400).json({ success: false, message: "User ID required" });
+    }
+
+    if (you_are !== undefined) {
+      const current = await User.findById(id).select("you_are");
+      if (!canSetYouAre(you_are, current?.you_are)) {
+        return res.status(400).json({ success: false, message: "Invalid value for 'you are'" });
+      }
     }
 
     // ✅ only touch fields that were actually sent, so partial updates

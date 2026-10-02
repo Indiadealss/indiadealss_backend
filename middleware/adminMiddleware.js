@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { isAdminUser } from "../utils/adminAccess.js";
 
 // Must run after authMiddleware so req.user is populated.
 const adminMiddleware = async (req, res, next) => {
@@ -6,8 +7,8 @@ const adminMiddleware = async (req, res, next) => {
     const userId = req.user?.user_id || req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findById(userId).select("role");
-    if (!user || user.role !== "admin") {
+    const user = await User.findById(userId).select("role you_are");
+    if (!isAdminUser(user)) {
       return res.status(403).json({ message: "Admin access required" });
     }
 
