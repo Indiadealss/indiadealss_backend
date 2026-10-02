@@ -91,7 +91,11 @@ export const genrateLead = async (req, res) => {
             leadId: lead._id,
         });
 
-        // await sendLeadMail(lead, property,propertyOwner, leadData);
+        try {
+            await sendLeadMail(lead, property, propertyOwner, leadData);
+        } catch (mailErr) {
+            console.error("❌ Lead mail failed:", mailErr.message);
+        }
 
         // await sendmessage(lead,property,propertyOwner);
 
@@ -130,7 +134,11 @@ export const genrateLeadMessage = async (req, res) => {
       ...leadData,
     });
 
-        // await sendMailmessage(lead , leadData);
+        try {
+            await sendMailmessage(lead, leadData);
+        } catch (mailErr) {
+            console.error("❌ Lead mail failed:", mailErr.message);
+        }
 
         // await sendHompagemessage(lead,leadData);
 

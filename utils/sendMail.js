@@ -1,6 +1,16 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import path from "path";
+import fs from "fs";
+import tls from "tls";
+import dotenv from "dotenv";
+dotenv.config();
+
+// Optional extra CA for local machines where antivirus (e.g. AVG Mail Shield) intercepts SMTP TLS.
+// Leave SMTP_EXTRA_CA unset in production.
+const extraCa = process.env.SMTP_EXTRA_CA && fs.existsSync(process.env.SMTP_EXTRA_CA)
+    ? { ca: [...tls.rootCertificates, fs.readFileSync(process.env.SMTP_EXTRA_CA, "utf8")] }
+    : undefined;
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -9,11 +19,12 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.MAIL_USER, // your  email
         pass: process.env.MAIL_PASS // app password
-    }
-}); 
+    },
+    tls: extraCa,
+});
 
 export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
-    console.log(propertyOwner.email,'email of owner',process.env.MAIL_USER,'mail user');
+    console.log(propertyOwner?.email,'email of owner',process.env.MAIL_USER,'mail user');
     const mailOptions = {
         from: `"${property.projectname}" <${process.env.MAIL_USER}>`,
     to: "indiadealsgroup@gmail.com",
@@ -24,16 +35,15 @@ export const sendLeadMail = async (lead,property,propertyOwner, leadData) => {
       <p><b>Phone:</b> ${lead.PhoneNumber}</p>
       <p><b>Email:</b> ${leadData.email || "-"}</p>
       <p><b>Project:</b> ${property.projectname}</p>
-      <p><b>Requirements:</b> ${lead.requirements || "-"}</p>
+      <p><b>Requirements:</b> ${leadData.requirement || leadData.Requirements || "-"}</p>
       <p><b>Message:</b> ${lead.message || "-"}</p>
       <hr />
       <p>Generated at: ${new Date().toLocaleString()}</p>
       `
     };
-    console.log(propertyOwner.email,'email of owner');
-    
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Lead mail sent: ${info.messageId} → ${info.accepted.join(", ")}`);
 };
 
 export const sendMailmessage = async (data, leadData) => {
@@ -50,13 +60,14 @@ export const sendMailmessage = async (data, leadData) => {
       <p><b>Phone:</b> ${data.PhoneNumber}</p>
       <p><b>Email:</b> ${leadData.email || "-"}</p>
       <p><b>Project:</b> ${data.projectname}</p>
-      <p><b>Requirements:</b> ${leadData.requirements || "-"}</p>
+      <p><b>Requirements:</b> ${leadData.requirement || leadData.Requirement || "-"}</p>
       <p><b>Message:</b> ${data.message || "-"}</p>
       <hr />
       <p>Generated at: ${new Date().toLocaleString()}</p>
       `
     };
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Lead mail sent: ${info.messageId} → ${info.accepted.join(", ")}`);
     
 }
 
