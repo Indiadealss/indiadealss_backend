@@ -1,5 +1,6 @@
 import PlotApplication from "../models/PlotApplication.js";
 import { nextSequence } from "../models/Counter.js";
+import { sendPlotApplicationMail } from "../utils/plotApplicationMail.js";
 import { appendPlotApplication, updatePlotApplicationStatus } from "../utils/plotApplicationSheet.js";
 
 const REQUIRED = ["applicationId","plot","bookingAmount","name","fatherName","phone","email","aadhaar","address","city","pincode"];
@@ -63,6 +64,9 @@ export const createPlotApplication = async (req,res) => {
             console.error("Google Sheets error (plot application):", sheetErr.response?.data || sheetErr.message);
         }
 
+        // Mail is sent in the background so the customer does not wait for SMTP
+        sendPlotApplicationMail(application).catch(mailErr => console.error("Mail error (plot application):", mailErr.message));
+
         res.status(201).json({success:true,message:"Application submitted successfully",data:{
             applicationId: application.applicationId,
             tokenNumber: application.tokenNumber,
@@ -90,7 +94,8 @@ export const markPlotApplicationPaid = async (req,res) => {
             return res.status(404).json({success:false,message:"Application not found"});
         }
 
-        if(application.status !== 'paid'){
+        const newlyPaid = application.status !== 'paid';
+        if(newlyPaid){
             application.status = 'paid';
             application.paymentId = paymentId;
             if(receipt) application.receipt = receipt;
@@ -102,6 +107,11 @@ export const markPlotApplicationPaid = async (req,res) => {
             await updatePlotApplicationStatus(application);
         } catch (sheetErr) {
             console.error("Google Sheets error (plot payment):", sheetErr.response?.data || sheetErr.message);
+        }
+
+        // Confirmation mail goes only once, even if the payment call is repeated
+        if(newlyPaid){
+            sendPlotApplicationMail(application).catch(mailErr => console.error("Mail error (plot payment):", mailErr.message));
         }
 
         res.status(200).json({success:true,message:"Payment recorded"});
