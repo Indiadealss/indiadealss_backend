@@ -52,6 +52,8 @@ app.use("/api/form", formSubmissionRoutes);
 const allowedOrigins = [
   "https://indiadealsgroup.com",
   "https://www.indiadealsgroup.com",
+  "https://indiadealss.com",
+  "https://www.indiadealss.com",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
   "http://localhost:3000" ,   // 🔥 ADD THIS (react)
   "http://192.168.1.34:5000"
