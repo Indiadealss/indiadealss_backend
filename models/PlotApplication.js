@@ -13,6 +13,7 @@ const documentSchema = new mongoose.Schema({
 // Plot booking application coming from the plot booking micro-site
 const plotApplicationSchema = new mongoose.Schema({
     applicationId:{ type:String, required:true, unique:true },
+    tokenNumber:{ type:String, unique:true, sparse:true },  // e.g. "YGC0001", shown to the customer
     plot:{ type:String, required:true },          // e.g. "110 gaj"
     bookingAmount:{ type:Number, required:true }, // rupees
     name:{ type:String, required:true, trim:true },

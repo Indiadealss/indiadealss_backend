@@ -3,17 +3,19 @@ import axios from "axios";
 // Writes plot applications to the Google Sheet through an Apps Script web app.
 // The script is bound to the sheet and deployed as a web app (Execute as: Me, Access: Anyone);
 // PLOT_SHEET_SCRIPT_SECRET must match the SECRET constant inside the script.
-// Headers and the payment column position are sent with every call, so column changes
+// Headers and column positions (Application ID, payment) are sent with every call, so column changes
 // only need a backend change, not a script redeploy.
 
 const HEADERS = [
-  "Application ID", "Date", "Time", "Plot", "Booking Amount",
+  "Token No.", "Application ID", "Date", "Time", "Plot", "Booking Amount",
   "Name", "Father's / Husband's Name", "Mobile", "Email", "Aadhaar", "PAN",
   "Address", "City", "PIN Code",
   "Aadhaar Card", "PAN Card", "Photo",
   "Order ID", "Status", "Razorpay Payment ID", "Payment Receipt", "Payment Date", "Payment Time"
 ];
-// Payment columns (Status .. Payment Time) start here, 1-based
+// 1-based columns the script needs: rows are found by Application ID,
+// and payment columns (Status .. Payment Time) are updated in place
+const ID_COL = HEADERS.indexOf("Application ID") + 1;
 const PAYMENT_START_COL = HEADERS.indexOf("Status") + 1;
 
 const istDate = (d) => (d ? d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" }) : "");
@@ -30,7 +32,8 @@ const buildRow = (app) => {
   const created = app.createdAt || new Date();
   const docs = app.documents || {};
   return [
-    app.applicationId, istDate(created), istTime(created), app.plot, app.bookingAmount,
+    app.tokenNumber || "", app.applicationId,
+    istDate(created), istTime(created), app.plot, app.bookingAmount,
     app.name, app.fatherName, asText(app.phone), app.email, asText(app.aadhaar), app.pan || "",
     app.address, app.city, asText(app.pincode),
     docs.aadhaarCard?.url || "", docs.panCard?.url || "", docs.photo?.url || "",
@@ -44,7 +47,7 @@ const callScript = async (payload) => {
 
   const { data } = await axios.post(
     url,
-    { secret: process.env.PLOT_SHEET_SCRIPT_SECRET, headers: HEADERS, ...payload },
+    { secret: process.env.PLOT_SHEET_SCRIPT_SECRET, headers: HEADERS, idCol: ID_COL, ...payload },
     { timeout: 20000 }
   );
 

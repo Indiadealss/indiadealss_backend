@@ -1,4 +1,5 @@
 import PlotApplication from "../models/PlotApplication.js";
+import { nextSequence } from "../models/Counter.js";
 import { appendPlotApplication, updatePlotApplicationStatus } from "../utils/plotApplicationSheet.js";
 
 const REQUIRED = ["applicationId","plot","bookingAmount","name","fatherName","phone","email","aadhaar","address","city","pincode"];
@@ -25,8 +26,12 @@ export const createPlotApplication = async (req,res) => {
             return res.status(400).json({success:false,message:"Aadhaar card document is required"});
         }
 
+        // Token shown to the customer: YGC0001, YGC0002, ...
+        const tokenNumber = `YGC${String(await nextSequence("plotToken")).padStart(4, "0")}`;
+
         const application = await PlotApplication.create({
             applicationId: body.applicationId,
+            tokenNumber,
             plot: body.plot,
             bookingAmount: Number(body.bookingAmount),
             name: body.name,
@@ -60,6 +65,7 @@ export const createPlotApplication = async (req,res) => {
 
         res.status(201).json({success:true,message:"Application submitted successfully",data:{
             applicationId: application.applicationId,
+            tokenNumber: application.tokenNumber,
             documents: application.documents
         }});
     } catch (err) {
