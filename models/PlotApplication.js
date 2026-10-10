@@ -29,9 +29,10 @@ const plotApplicationSchema = new mongoose.Schema({
         panCard:{ type:documentSchema },
         photo:{ type:documentSchema }
     },
-    orderId:{ type:String },
+    orderId:{ type:String },                      // Razorpay order_...
+    receipt:{ type:String },                      // receipt sent while creating the Razorpay order
     status:{ type:String, enum:['pending','paid'], default:'pending' },
-    paymentId:{ type:String },
+    paymentId:{ type:String },                    // Razorpay pay_...
     paidAt:{ type:Date },
     source:{ type:String },
     ip:{ type:String },

@@ -44,6 +44,7 @@ export const createPlotApplication = async (req,res) => {
                 photo: toDocument(files.photo?.[0])
             },
             orderId: body.orderId,
+            receipt: body.receipt,
             source: body.source || req.get('origin'),
             ip: body.ip || req.headers['x-forwarded-for']?.split(',')[0] || req.ip
         });
@@ -73,7 +74,7 @@ export const createPlotApplication = async (req,res) => {
 // Marks an application as paid. Called by the micro-site server after it verifies the Razorpay signature.
 export const markPlotApplicationPaid = async (req,res) => {
     try{
-        const { orderId, paymentId } = req.body;
+        const { orderId, paymentId, receipt } = req.body;
         if(!orderId || !paymentId){
             return res.status(400).json({success:false,message:"orderId and paymentId are required"});
         }
@@ -86,7 +87,8 @@ export const markPlotApplicationPaid = async (req,res) => {
         if(application.status !== 'paid'){
             application.status = 'paid';
             application.paymentId = paymentId;
-            application.paidAt = new Date();
+            if(receipt) application.receipt = receipt;
+            application.paidAt = new Date();   // server (system) date & time of payment
             await application.save();
         }
 
