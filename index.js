@@ -32,6 +32,7 @@ import teamMemberRoutes from "./routes/Teammemberroutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import featuredPropertyRoutes from "./routes/featuredPropertyRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import formSubmissionRoutes from "./routes/formSubmissionRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -44,6 +45,9 @@ app.use(express.json({ limit: '900mb' }));
 app.use(express.urlencoded({ limit: '900mb', extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+// External form API has its own CORS, so mount it before the global CORS middleware
+app.use("/api/form", formSubmissionRoutes);
 
 const allowedOrigins = [
   "https://indiadealsgroup.com",
