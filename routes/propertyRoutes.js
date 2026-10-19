@@ -3,6 +3,8 @@ import { getAllProperties, createProperty,getProperty, getPropertyByRera, getPro
 import upload from "../config/multers3.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
+import bulkUploadMiddleware from "../middleware/bulkUploadMiddleware.js";
+import { bulkCreateProjects, getBulkProjects } from "../controllers/bulkProjectController.js";
 //import sessionMiddleware from "../middleware/sessionMiddleware.js";
 
 const router = express.Router();
@@ -11,6 +13,10 @@ const router = express.Router();
 router.get("/admin/pending", authMiddleware, adminMiddleware, getPendingProperties);
 router.put("/admin/:id/approve", authMiddleware, adminMiddleware, approveProperty);
 router.put("/admin/:id/reject", authMiddleware, adminMiddleware, rejectProperty);
+
+// Bulk project upload — restricted to the mobiles in utils/bulkUploadAccess.js
+router.post("/bulk/projects", authMiddleware, bulkUploadMiddleware, bulkCreateProjects);
+router.get("/bulk/projects", authMiddleware, bulkUploadMiddleware, getBulkProjects);
 
 router.get("/getAllProperties",  getAllProperties);
 router.get("/getOnlyProperties",getOnlyProperties);

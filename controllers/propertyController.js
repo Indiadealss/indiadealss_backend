@@ -1062,6 +1062,14 @@ export const rejectProperty = async (req, res) => {
     const { id } = req.params;
     const { reason = "" } = req.body;
 
+    // Bulk-uploaded projects are deleted on reject — nobody needs to fix and resubmit
+    // them (the uploader can upload again). Users' own listings are kept as "rejected"
+    // so they can see the reason and edit.
+    const bulk = await Property.findOneAndDelete({ _id: id, bulkUploaded: true });
+    if (bulk) {
+      return res.status(200).json({ success: true, deleted: true, message: `${bulk.projectname || "Project"} rejected and deleted` });
+    }
+
     const property = await Property.findByIdAndUpdate(
       id,
       { $set: { approvalStatus: "rejected", rejectionReason: reason } },

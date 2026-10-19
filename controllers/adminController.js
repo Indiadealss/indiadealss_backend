@@ -94,7 +94,7 @@ export const getAdminProperties = async (req, res) => {
 
     const [items, total] = await Promise.all([
       Property.find(filter)
-        .select("projectname npxid spid purpose property price status approvalStatus rejectionReason location images owner createdAt updatedAt")
+        .select("projectname npxid spid purpose property price status approvalStatus rejectionReason bulkUploaded location images owner createdAt updatedAt")
         .populate("owner", "name mobile email role")
         .sort({ createdAt: -1 })
         .skip(skip)
