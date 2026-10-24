@@ -33,6 +33,7 @@ import verificationRoutes from "./routes/verificationRoutes.js";
 import featuredPropertyRoutes from "./routes/featuredPropertyRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import formSubmissionRoutes from "./routes/formSubmissionRoutes.js";
+import hrRoutes from "./routes/hrRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -55,6 +56,7 @@ const allowedOrigins = [
   "https://indiadealss.com",
   "https://www.indiadealss.com",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
+  "http://localhost:5190",
   "http://localhost:3000" ,   // 🔥 ADD THIS (react)
   "http://192.168.1.34:5000"
 ];
@@ -98,6 +100,7 @@ app.use("/api/team-members", teamMemberRoutes);
 app.use("/api/verification", verificationRoutes);
 app.use("/api/featured", featuredPropertyRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/hr", hrRoutes);
 
 //app.listen(process.env.PORT, () => console.log(`Server running on :${process.env.PORT}`));
 
