@@ -71,26 +71,47 @@ export const getAdminStats = async (req, res) => {
   }
 };
 
+// a property without a status has never been activated, so it counts as inactive
+const statusFilter = (status) => {
+  if (status === "active") return { status: "active" };
+  if (status === "inactive") return { status: { $ne: "active" } };
+  return {};
+};
+
+// shared by the properties list and its export
+const propertyFilter = ({ search = "", approvalStatus = "", status = "", owner = "" }) => {
+  const filter = statusFilter(status);
+  if (approvalStatus) filter.approvalStatus = approvalStatus;
+  if (owner && mongoose.isValidObjectId(owner)) filter.owner = owner;
+  if (search.trim()) {
+    const rx = new RegExp(escapeRegex(search.trim()), "i");
+    filter.$or = [
+      { projectname: rx },
+      { npxid: rx },
+      { spid: rx },
+      { rera: rx },
+      { "location.City": rx },
+      { "location.Address": rx },
+    ];
+  }
+  return filter;
+};
+
+const leadCountMap = async (items) => {
+  const ids = items.map((p) => p._id);
+  const counts = await Lead.aggregate([
+    { $match: { property_id: { $in: ids } } },
+    { $group: { _id: "$property_id", count: { $sum: 1 } } },
+  ]);
+  return Object.fromEntries(counts.map((c) => [String(c._id), c.count]));
+};
+
+const EXPORT_LIMIT = 10000;
+
 export const getAdminProperties = async (req, res) => {
   try {
     const { page, limit, skip } = paging(req.query);
-    const { search = "", approvalStatus = "", status = "", owner = "" } = req.query;
-
-    const filter = {};
-    if (approvalStatus) filter.approvalStatus = approvalStatus;
-    if (status) filter.status = status;
-    if (owner && mongoose.isValidObjectId(owner)) filter.owner = owner;
-    if (search.trim()) {
-      const rx = new RegExp(escapeRegex(search.trim()), "i");
-      filter.$or = [
-        { projectname: rx },
-        { npxid: rx },
-        { spid: rx },
-        { rera: rx },
-        { "location.City": rx },
-        { "location.Address": rx },
-      ];
-    }
+    const filter = propertyFilter(req.query);
 
     const [items, total] = await Promise.all([
       Property.find(filter)
@@ -104,12 +125,7 @@ export const getAdminProperties = async (req, res) => {
     ]);
 
     // lead count per property on this page
-    const ids = items.map((p) => p._id);
-    const counts = await Lead.aggregate([
-      { $match: { property_id: { $in: ids } } },
-      { $group: { _id: "$property_id", count: { $sum: 1 } } },
-    ]);
-    const countMap = Object.fromEntries(counts.map((c) => [String(c._id), c.count]));
+    const countMap = await leadCountMap(items);
 
     const data = items.map((p) => {
       const cover = (p.images || []).find((i) => i.type === "cover") || (p.images || []).find((i) => i.type !== "brouser");
@@ -118,6 +134,30 @@ export const getAdminProperties = async (req, res) => {
     });
 
     res.status(200).json({ success: true, data, ...pageMeta(page, limit, total) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// every matching property, unpaged, for the Excel export (status: all | active | inactive)
+export const exportAdminProperties = async (req, res) => {
+  try {
+    const status = String(req.query.status || "all").toLowerCase();
+    if (!["all", "active", "inactive"].includes(status)) {
+      return res.status(400).json({ success: false, message: "status must be 'all', 'active' or 'inactive'" });
+    }
+
+    const items = await Property.find(propertyFilter({ ...req.query, status }))
+      .select("projectname npxid spid purpose property price status approvalStatus rera location owner createdAt")
+      .populate("owner", "name mobile email")
+      .sort({ createdAt: -1 })
+      .limit(EXPORT_LIMIT)
+      .lean();
+
+    const countMap = await leadCountMap(items);
+    const data = items.map((p) => ({ ...p, leadCount: countMap[String(p._id)] || 0 }));
+
+    res.status(200).json({ success: true, data, totalItems: data.length });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

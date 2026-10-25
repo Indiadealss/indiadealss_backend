@@ -4,6 +4,7 @@ import adminMiddleware from "../middleware/adminMiddleware.js";
 import {
   getAdminStats,
   getAdminProperties,
+  exportAdminProperties,
   updateAdminPropertyStatus,
   deleteAdminProperty,
   getAdminLeads,
@@ -19,6 +20,7 @@ router.use(authMiddleware, adminMiddleware);
 router.get("/stats", getAdminStats);
 
 router.get("/properties", getAdminProperties);
+router.get("/properties/export", exportAdminProperties);
 router.put("/properties/:id/status", updateAdminPropertyStatus);
 router.delete("/properties/:id", deleteAdminProperty);
 
