@@ -5,10 +5,13 @@ import { hrToJSON } from "./toJSON.js";
 const hrEmployeeSchema = new mongoose.Schema({
     code:{ type:String, required:true, unique:true, trim:true },
     name:{ type:String, required:true, trim:true },
+    fatherName:{ type:String, trim:true, default:"" },
     dept:{ type:String, required:true, trim:true },
     designation:{ type:String, trim:true, default:"" },
     // monthly gross salary in rupees, drives payroll
     gross:{ type:Number, min:0, default:0 },
+    // monthly basic salary in rupees, the starting value for each month's salary sheet
+    basic:{ type:Number, min:0, default:0 },
     // fixed monthly TDS in rupees
     tds:{ type:Number, min:0, default:0 },
     // shift start, "HH:MM"

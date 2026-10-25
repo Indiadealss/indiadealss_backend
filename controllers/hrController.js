@@ -5,6 +5,7 @@ import HrEmployee from "../models/hr/HrEmployee.js";
 import HrAttendance from "../models/hr/HrAttendance.js";
 import HrLeave, { LEAVE_TYPES } from "../models/hr/HrLeave.js";
 import HrSettings from "../models/hr/HrSettings.js";
+import HrSalary from "../models/hr/HrSalary.js";
 import makeHrSample from "../utils/hrSample.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,8 +83,8 @@ export const updateHrSettings = async (req, res) => {
 
 const employeeFields = (b) => {
   const out = {};
-  for (const k of ["code", "name", "dept", "designation", "base"]) if (b[k] !== undefined) out[k] = String(b[k]).trim();
-  for (const k of ["gross", "tds"]) if (b[k] !== undefined) out[k] = Math.max(0, Number(b[k]) || 0);
+  for (const k of ["code", "name", "fatherName", "dept", "designation", "base"]) if (b[k] !== undefined) out[k] = String(b[k]).trim();
+  for (const k of ["gross", "tds", "basic"]) if (b[k] !== undefined) out[k] = Math.max(0, Number(b[k]) || 0);
   if (b.shift !== undefined) out.shift = TIME_RE.test(b.shift) ? b.shift : "09:30";
   if (b.joined !== undefined) out.joined = DATE_RE.test(b.joined) ? b.joined : "";
   if (b.active !== undefined) out.active = !!b.active;
@@ -183,10 +184,11 @@ export const deleteHrEmployee = async (req, res) => {
     if (!isId(req.params.id)) return res.status(404).json({ message: "Employee not found" });
     const employee = await HrEmployee.findByIdAndDelete(req.params.id);
     if (!employee) return res.status(404).json({ message: "Employee not found" });
-    // an employee's punches and leave go with them
+    // an employee's punches, leave and salary rows go with them
     await Promise.all([
       HrAttendance.deleteMany({ emp: employee._id }),
       HrLeave.deleteMany({ emp: employee._id }),
+      HrSalary.deleteMany({ emp: employee._id }),
       HrUser.deleteMany({ employee: employee._id })
     ]);
     res.json({ message: "Employee deleted" });
@@ -313,6 +315,94 @@ export const deleteHrLeave = async (req, res) => {
   } catch (err) { serverError(res, err); }
 };
 
+// ---------- salary sheet ----------
+// HRA is 40% and TA 5% of basic. Overtime is paid at basic / 30 days / 8 hours per hour.
+// Net = basic + HRA + TA + overtime pay. Week off, revenue target and achievement are recorded only.
+
+const MONTH_RE = /^\d{4}-\d{2}$/;
+const HRA_RATE = 0.4;
+const TA_RATE = 0.05;
+const OT_DIVISOR = 30 * 8;
+const SALARY_NUMBERS = ["basic", "overtimeHrs", "weekOff", "revenueTarget", "achievement"];
+
+// Weekly-off days in the month, the starting week off count for an unsaved row
+const weeklyOffsIn = (month, weeklyOff) => {
+  const [y, m] = month.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  let n = 0;
+  for (let d = 1; d <= last; d++) if (weeklyOff.includes(new Date(Date.UTC(y, m - 1, d)).getUTCDay())) n++;
+  return n;
+};
+
+const salaryRow = (employee, rec, defaultWeekOff) => {
+  const basic = rec ? rec.basic : employee.basic || 0;
+  const overtimeHrs = rec?.overtimeHrs || 0;
+  const hra = Math.round(basic * HRA_RATE);
+  const ta = Math.round(basic * TA_RATE);
+  const otPay = Math.round((basic / OT_DIVISOR) * overtimeHrs);
+  return {
+    emp: String(employee._id),
+    code: employee.code,
+    name: employee.name,
+    fatherName: employee.fatherName || "",
+    dept: employee.dept,
+    basic, hra, ta, overtimeHrs, otPay,
+    weekOff: rec ? rec.weekOff : defaultWeekOff,
+    revenueTarget: rec?.revenueTarget || 0,
+    achievement: rec?.achievement || 0,
+    net: basic + hra + ta + otPay,
+    saved: !!rec
+  };
+};
+
+// Active employees, plus anyone who already has a row for that month
+const salarySheet = async (month) => {
+  const [recs, settings] = await Promise.all([HrSalary.find({ month }), getSettings()]);
+  const byEmp = new Map(recs.map((r) => [String(r.emp), r]));
+  const employees = await HrEmployee.find({ $or: [{ active: true }, { _id: { $in: recs.map((r) => r.emp) } }] }).sort({ code: 1 });
+  const defaultWeekOff = weeklyOffsIn(month, settings.weeklyOff);
+  return employees.map((e) => salaryRow(e, byEmp.get(String(e._id)), defaultWeekOff));
+};
+
+export const getHrSalary = async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!MONTH_RE.test(month || "")) return res.status(400).json({ message: "month must be YYYY-MM" });
+    res.json({ month, rows: await salarySheet(month) });
+  } catch (err) { serverError(res, err); }
+};
+
+// Saves the whole month. Father name and basic are also kept on the employee,
+// so next month's sheet starts from them.
+export const saveHrSalary = async (req, res) => {
+  try {
+    const { month, rows } = req.body || {};
+    if (!MONTH_RE.test(month || "")) return res.status(400).json({ message: "month must be YYYY-MM" });
+    if (!Array.isArray(rows)) return res.status(400).json({ message: "rows must be a list" });
+
+    const valid = rows.filter((r) => r && isId(r.emp));
+    const known = new Set((await HrEmployee.find({ _id: { $in: valid.map((r) => r.emp) } }).select("_id")).map((e) => String(e._id)));
+    const clean = valid.filter((r) => known.has(String(r.emp))).map((r) => ({
+      emp: r.emp,
+      fatherName: r.fatherName === undefined ? undefined : String(r.fatherName).trim(),
+      nums: Object.fromEntries(SALARY_NUMBERS.map((k) => [k, Math.max(0, Number(r[k]) || 0)]))
+    }));
+
+    if (clean.length) {
+      await HrSalary.bulkWrite(clean.map((r) => ({
+        updateOne: { filter: { emp: r.emp, month }, update: { $set: r.nums }, upsert: true }
+      })));
+      await HrEmployee.bulkWrite(clean.map((r) => ({
+        updateOne: {
+          filter: { _id: r.emp },
+          update: { $set: { basic: r.nums.basic, ...(r.fatherName !== undefined && { fatherName: r.fatherName }) } }
+        }
+      })));
+    }
+    res.json({ month, rows: await salarySheet(month) });
+  } catch (err) { serverError(res, err); }
+};
+
 // ---------- sample company ----------
 
 export const loadHrSample = async (req, res) => {
@@ -337,6 +427,7 @@ export const clearHrSample = async (req, res) => {
     await Promise.all([
       HrAttendance.deleteMany({ $or: [{ sample: true }, { emp: { $in: ids } }] }),
       HrLeave.deleteMany({ $or: [{ sample: true }, { emp: { $in: ids } }] }),
+      HrSalary.deleteMany({ emp: { $in: ids } }),
       HrEmployee.deleteMany({ _id: { $in: ids } }),
       HrUser.deleteMany({ employee: { $in: ids } })
     ]);

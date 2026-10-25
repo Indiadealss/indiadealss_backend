@@ -57,6 +57,7 @@ const allowedOrigins = [
   "https://www.indiadealss.com",
   "http://localhost:5173",   // 🔥 ADD THIS (vite)
   "http://localhost:5190",
+  "https://indiadeals-hr.vercel.app/",
   "http://localhost:3000" ,   // 🔥 ADD THIS (react)
   "http://192.168.1.34:5000"
 ];

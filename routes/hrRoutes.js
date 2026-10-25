@@ -6,6 +6,7 @@ import {
   getHrEmployees, createHrEmployee, updateHrEmployee, deleteHrEmployee,
   getHrAttendance, punchHr, overrideHrAttendance,
   getHrLeaves, createHrLeave, updateHrLeaveStatus, deleteHrLeave,
+  getHrSalary, saveHrSalary,
   loadHrSample, clearHrSample,
 } from "../controllers/hrController.js";
 
@@ -36,6 +37,9 @@ router.get("/leaves", getHrLeaves);
 router.post("/leaves", createHrLeave);
 router.patch("/leaves/:id/status", admin, updateHrLeaveStatus);
 router.delete("/leaves/:id", admin, deleteHrLeave);
+
+router.get("/salary", admin, getHrSalary);
+router.put("/salary", admin, saveHrSalary);
 
 router.post("/sample", admin, loadHrSample);
 router.delete("/sample", admin, clearHrSample);
