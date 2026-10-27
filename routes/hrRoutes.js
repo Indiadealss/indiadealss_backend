@@ -1,6 +1,6 @@
 import express from "express";
 import hrAuthMiddleware, { requireHrAdmin as admin } from "../middleware/hrAuthMiddleware.js";
-import { hrLogin, hrMe, hrLogout } from "../controllers/hrAuthController.js";
+import { hrLogin, hrAdminLogin, hrMe, hrLogout, hrChangePassword } from "../controllers/hrAuthController.js";
 import {
   getHrSettings, updateHrSettings,
   getHrEmployees, createHrEmployee, updateHrEmployee, deleteHrEmployee,
@@ -13,6 +13,7 @@ import {
 const router = express.Router();
 
 router.post("/auth/login", hrLogin);
+router.post("/auth/admin-login", hrAdminLogin);
 router.post("/auth/logout", hrLogout);
 
 // everything below requires a signed-in HR user. Employees see only their own records
@@ -20,6 +21,7 @@ router.post("/auth/logout", hrLogout);
 router.use(hrAuthMiddleware);
 
 router.get("/auth/me", hrMe);
+router.put("/auth/password", admin, hrChangePassword);
 
 router.get("/settings", getHrSettings);
 router.put("/settings", admin, updateHrSettings);
