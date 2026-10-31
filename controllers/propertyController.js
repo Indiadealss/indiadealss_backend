@@ -135,8 +135,15 @@ export const updateImageMeta = async (req, res) => {
     const { id, imageId } = req.params;
     const { type, fields } = req.body;
 
-    console.log('h');
-    
+    // a project has only one cover image: the current cover goes back to "general"
+    if (type === "cover") {
+      await Property.updateOne(
+        { _id: id },
+        { $set: { "images.$[c].type": "general" } },
+        { arrayFilters: [{ "c.type": "cover" }] }
+      );
+    }
+
     await Property.updateOne(
       { _id: id, "images._id": imageId },
       {
