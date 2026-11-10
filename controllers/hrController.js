@@ -3,9 +3,13 @@ import bcrypt from "bcrypt";
 import HrUser, { hrOrgUsername } from "../models/hr/HrUser.js";
 import HrEmployee from "../models/hr/HrEmployee.js";
 import HrAttendance from "../models/hr/HrAttendance.js";
-import HrLeave, { LEAVE_TYPES } from "../models/hr/HrLeave.js";
+import HrLeave, { LEAVE_TYPES, QUOTA_TYPES } from "../models/hr/HrLeave.js";
 import HrSettings from "../models/hr/HrSettings.js";
 import HrSalary from "../models/hr/HrSalary.js";
+import { HrPayslip, HrRevision, HrAdjustment, HrLoan, HrTaxDeclaration, HrSettlement } from "../models/hr/HrPayroll.js";
+import { HrRequest, HrPost } from "../models/hr/HrPortal.js";
+import { monthLocked, rangeLocked } from "./hrPayrollController.js";
+import { cleanStructure, structureTotal } from "../utils/hrPayroll.js";
 import makeHrSample from "../utils/hrSample.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -67,8 +71,27 @@ export const updateHrSettings = async (req, res) => {
     for (const k of ["graceMins", "lateLimit", "halfDayHours", "pt"]) {
       if (b[k] !== undefined) update[k] = Math.max(0, Number(b[k]) || 0);
     }
+    for (const k of ["address", "companyPan", "tan", "pfCode", "esiCode"]) {
+      if (b[k] !== undefined) update[k] = String(b[k]).trim();
+    }
+    // payroll rules: only known keys, numbers stay numbers and switches stay switches
+    if (b.payroll && typeof b.payroll === "object") {
+      const defaults = new HrSettings().toObject().payroll;
+      const walk = (shape, input, path) => {
+        for (const [k, def] of Object.entries(shape)) {
+          if (input?.[k] === undefined) continue;
+          if (def && typeof def === "object") walk(def, input[k], `${path}.${k}`);
+          else if (typeof def === "boolean") update[`${path}.${k}`] = !!input[k];
+          else update[`${path}.${k}`] = Math.max(0, Number(input[k]) || 0);
+        }
+      };
+      walk(defaults, b.payroll, "payroll");
+      for (const k of ["payroll.shiftHours", "payroll.otDivisorDays", "payroll.encashDivisor"]) {
+        if (update[k] !== undefined) update[k] = Math.max(1, update[k]);
+      }
+    }
     if (b.quota) {
-      for (const t of ["CL", "SL", "EL"]) {
+      for (const t of QUOTA_TYPES) {
         if (b.quota[t] !== undefined) update["quota." + t] = Math.max(0, Number(b.quota[t]) || 0);
       }
     }
@@ -81,15 +104,35 @@ export const updateHrSettings = async (req, res) => {
 
 // ---------- employees ----------
 
+const BANK_MODES = ["NEFT", "RTGS", "IMPS", "Cheque", "Cash"];
+
 const employeeFields = (b) => {
   const out = {};
-  for (const k of ["code", "name", "fatherName", "dept", "designation", "base"]) if (b[k] !== undefined) out[k] = String(b[k]).trim();
+  for (const k of ["code", "name", "fatherName", "dept", "designation", "base", "email", "phone", "pan", "uan", "esiNo"]) {
+    if (b[k] !== undefined) out[k] = String(b[k]).trim();
+  }
   for (const k of ["gross", "tds", "basic"]) if (b[k] !== undefined) out[k] = Math.max(0, Number(b[k]) || 0);
+  for (const k of ["pfOn", "esiOn", "ptOn", "active"]) if (b[k] !== undefined) out[k] = !!b[k];
+  if (b.taxRegime !== undefined) out.taxRegime = b.taxRegime === "old" ? "old" : "new";
   if (b.shift !== undefined) out.shift = TIME_RE.test(b.shift) ? b.shift : "09:30";
   if (b.joined !== undefined) out.joined = DATE_RE.test(b.joined) ? b.joined : "";
-  if (b.active !== undefined) out.active = !!b.active;
+  if (b.dob !== undefined) out.dob = DATE_RE.test(b.dob) ? b.dob : "";
+  if (b.bank && typeof b.bank === "object") {
+    for (const k of ["holder", "accountNo", "ifsc", "bankName"]) if (b.bank[k] !== undefined) out[`bank.${k}`] = String(b.bank[k]).trim();
+    if (BANK_MODES.includes(b.bank.mode)) out["bank.mode"] = b.bank.mode;
+  }
+  // the structure sets gross and basic too
+  if (b.structure && typeof b.structure === "object") {
+    const s = cleanStructure(b.structure);
+    out.structure = s;
+    out.gross = structureTotal(s);
+    out.basic = s.basic;
+  }
   return out;
 };
+
+// After the first salary revision, salary changes go through revisions so history and arrears stay right
+const STRUCTURE_LOCKED = "This employee's salary has revisions. Use \"Revise salary\" to change it.";
 
 const duplicateCode = (res, err) => {
   if (err?.code === 11000) {
@@ -171,8 +214,18 @@ export const updateHrEmployee = async (req, res) => {
     const { password, error } = readPassword(b);
     if (error) return res.status(400).json({ message: error });
     if (b.code && await codeTakenByLogin(b.code, req.params.id)) return res.status(409).json({ message: CODE_TAKEN });
+    const fields = employeeFields(b);
+    if (fields.structure && await HrRevision.exists({ emp: req.params.id })) {
+      const current = await HrEmployee.findById(req.params.id).select("structure");
+      if (current && JSON.stringify(cleanStructure(current.structure)) !== JSON.stringify(fields.structure)) {
+        return res.status(409).json({ message: STRUCTURE_LOCKED });
+      }
+      delete fields.structure;
+      delete fields.gross;
+      delete fields.basic;
+    }
 
-    const employee = await HrEmployee.findByIdAndUpdate(req.params.id, { $set: employeeFields(b) }, { new: true, runValidators: true });
+    const employee = await HrEmployee.findByIdAndUpdate(req.params.id, { $set: fields }, { new: true, runValidators: true });
     if (!employee) return res.status(404).json({ message: "Employee not found" });
     await syncEmployeeLogin(employee, password);
     res.json({ employee: (await withLoginFlag([employee]))[0] });
@@ -182,13 +235,26 @@ export const updateHrEmployee = async (req, res) => {
 export const deleteHrEmployee = async (req, res) => {
   try {
     if (!isId(req.params.id)) return res.status(404).json({ message: "Employee not found" });
+    // salary that has been approved or paid is a financial record and must stay
+    if (await HrPayslip.exists({ emp: req.params.id, status: { $in: ["approved", "paid"] } }) || await HrSettlement.exists({ emp: req.params.id, status: { $ne: "draft" } })) {
+      return res.status(409).json({ message: "This employee has processed payroll, so they can't be deleted. Mark them inactive instead." });
+    }
     const employee = await HrEmployee.findByIdAndDelete(req.params.id);
     if (!employee) return res.status(404).json({ message: "Employee not found" });
-    // an employee's punches, leave and salary rows go with them
+    // an employee's punches, leave, salary and payroll drafts go with them
+    const emp = { emp: employee._id };
     await Promise.all([
-      HrAttendance.deleteMany({ emp: employee._id }),
-      HrLeave.deleteMany({ emp: employee._id }),
-      HrSalary.deleteMany({ emp: employee._id }),
+      HrAttendance.deleteMany(emp),
+      HrLeave.deleteMany(emp),
+      HrSalary.deleteMany(emp),
+      HrPayslip.deleteMany(emp),
+      HrRevision.deleteMany(emp),
+      HrAdjustment.deleteMany(emp),
+      HrLoan.deleteMany(emp),
+      HrTaxDeclaration.deleteMany(emp),
+      HrSettlement.deleteMany(emp),
+      HrRequest.deleteMany(emp),
+      HrPost.deleteMany({ to: employee._id }),
       HrUser.deleteMany({ employee: employee._id })
     ]);
     res.json({ message: "Employee deleted" });
@@ -243,6 +309,7 @@ export const overrideHrAttendance = async (req, res) => {
     if (!isId(emp) || !DATE_RE.test(date || "")) return res.status(400).json({ message: "Employee and date are required" });
     if (ov != null && !["P", "HD", "A"].includes(ov)) return res.status(400).json({ message: "Invalid status" });
     if (date > istNow().date) return res.status(400).json({ message: "You can't mark a future day" });
+    if (await monthLocked(date.slice(0, 7))) return res.status(409).json({ message: PAYROLL_LOCKED });
     if (!(await HrEmployee.exists({ _id: emp }))) return res.status(404).json({ message: "Employee not found" });
 
     let rec = await HrAttendance.findOne({ emp, date });
@@ -264,6 +331,8 @@ export const overrideHrAttendance = async (req, res) => {
 
 // ---------- leave ----------
 
+const PAYROLL_LOCKED = "Payroll for that month is approved and locked. Unlock it from the Payroll page first.";
+
 export const getHrLeaves = async (req, res) => {
   try {
     const leaves = await HrLeave.find(isEmployee(req) ? { emp: ownId(req) } : {}).sort({ from: -1 });
@@ -284,6 +353,7 @@ export const createHrLeave = async (req, res) => {
 
     const days = countLeaveDays(from, to, await getSettings());
     if (!days) return res.status(400).json({ message: "Those dates are all weekly offs or holidays." });
+    if (await rangeLocked(from, to)) return res.status(409).json({ message: PAYROLL_LOCKED });
 
     const leave = await HrLeave.create({
       emp, type, from, to, days,
@@ -300,8 +370,11 @@ export const updateHrLeaveStatus = async (req, res) => {
     const { status } = req.body || {};
     if (!["pending", "approved", "rejected"].includes(status)) return res.status(400).json({ message: "Invalid status" });
     if (!isId(req.params.id)) return res.status(404).json({ message: "Leave not found" });
-    const leave = await HrLeave.findByIdAndUpdate(req.params.id, { $set: { status } }, { new: true });
-    if (!leave) return res.status(404).json({ message: "Leave not found" });
+    const found = await HrLeave.findById(req.params.id);
+    if (!found) return res.status(404).json({ message: "Leave not found" });
+    if (await rangeLocked(found.from, found.to)) return res.status(409).json({ message: PAYROLL_LOCKED });
+    found.status = status;
+    const leave = await found.save();
     res.json({ leave });
   } catch (err) { serverError(res, err); }
 };
@@ -309,8 +382,12 @@ export const updateHrLeaveStatus = async (req, res) => {
 export const deleteHrLeave = async (req, res) => {
   try {
     if (!isId(req.params.id)) return res.status(404).json({ message: "Leave not found" });
-    const leave = await HrLeave.findByIdAndDelete(req.params.id);
-    if (!leave) return res.status(404).json({ message: "Leave not found" });
+    const leave = await HrLeave.findById(req.params.id);
+    // employees can withdraw only their own pending requests
+    if (!leave || (isEmployee(req) && String(leave.emp) !== String(ownId(req)))) return res.status(404).json({ message: "Leave not found" });
+    if (isEmployee(req) && leave.status !== "pending") return res.status(409).json({ message: "Only a pending leave can be withdrawn. Ask HR to cancel it." });
+    if (leave.status === "approved" && await rangeLocked(leave.from, leave.to)) return res.status(409).json({ message: PAYROLL_LOCKED });
+    await leave.deleteOne();
     res.json({ message: "Leave deleted" });
   } catch (err) { serverError(res, err); }
 };
@@ -424,10 +501,19 @@ export const clearHrSample = async (req, res) => {
   try {
     const sampleEmps = await HrEmployee.find({ sample: true }).select("_id");
     const ids = sampleEmps.map((e) => e._id);
+    const emp = { emp: { $in: ids } };
     await Promise.all([
-      HrAttendance.deleteMany({ $or: [{ sample: true }, { emp: { $in: ids } }] }),
-      HrLeave.deleteMany({ $or: [{ sample: true }, { emp: { $in: ids } }] }),
-      HrSalary.deleteMany({ emp: { $in: ids } }),
+      HrAttendance.deleteMany({ $or: [{ sample: true }, emp] }),
+      HrLeave.deleteMany({ $or: [{ sample: true }, emp] }),
+      HrSalary.deleteMany(emp),
+      HrPayslip.deleteMany(emp),
+      HrRevision.deleteMany(emp),
+      HrAdjustment.deleteMany(emp),
+      HrLoan.deleteMany(emp),
+      HrTaxDeclaration.deleteMany(emp),
+      HrSettlement.deleteMany(emp),
+      HrRequest.deleteMany(emp),
+      HrPost.deleteMany({ to: { $in: ids } }),
       HrEmployee.deleteMany({ _id: { $in: ids } }),
       HrUser.deleteMany({ employee: { $in: ids } })
     ]);

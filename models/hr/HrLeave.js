@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 import hrDB from "../../config/hrDb.js";
 import { hrToJSON } from "./toJSON.js";
 
-export const LEAVE_TYPES = ["CL","SL","EL","LWP"];
+// CO = compensatory off, SPL = special leave; all except LWP are paid
+export const LEAVE_TYPES = ["CL","SL","EL","CO","SPL","LWP"];
+export const QUOTA_TYPES = ["CL","SL","EL","CO","SPL"];
 
 const hrLeaveSchema = new mongoose.Schema({
     emp:{ type:mongoose.Schema.Types.ObjectId, ref:"HrEmployee", required:true },

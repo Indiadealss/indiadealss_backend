@@ -12,6 +12,8 @@ const hrAttendanceSchema = new mongoose.Schema({
     out:{ type:String },
     loc:{ type:String },
     ov:{ type:String, enum:["P","HD","A"] },
+    // set by an approved request: reg = regularized punches, od = outdoor duty, wfh = work from home
+    src:{ type:String, enum:["reg","od","wfh"] },
     sample:{ type:Boolean, default:false }
 },{timestamps:true});
 
