@@ -1,6 +1,7 @@
 import express from "express";
 import hrAuthMiddleware, { requireHrAdmin as admin } from "../middleware/hrAuthMiddleware.js";
-import { hrLogin, hrAdminLogin, hrMe, hrLogout, hrChangePassword } from "../controllers/hrAuthController.js";
+import { requireCrm, getCrmData, createCrmRecords, updateCrmRecords, deleteCrmRecords, updateCrmCompany, importCrmData } from "../controllers/hrCrmController.js";
+import { hrLogin, hrVerifyOtp, hrResendOtp, hrAdminLogin, hrMe, hrLogout, hrChangePassword, hrSetAdminPhone } from "../controllers/hrAuthController.js";
 import {
   getHrSettings, updateHrSettings,
   getHrEmployees, createHrEmployee, updateHrEmployee, deleteHrEmployee,
@@ -20,13 +21,15 @@ import {
   listSettlements, previewSettlement, saveSettlement, approveSettlement, paySettlement, deleteSettlement,
 } from "../controllers/hrPayrollController.js";
 import {
-  getDirectory, listRequests, createRequest, setRequestStatus, deleteRequest,
+  getDirectory, getCrmTeam, listRequests, createRequest, setRequestStatus, deleteRequest,
   listPosts, createPost, likePost, deletePost,
 } from "../controllers/hrPortalController.js";
 
 const router = express.Router();
 
 router.post("/auth/login", hrLogin);
+router.post("/auth/verify-otp", hrVerifyOtp);
+router.post("/auth/resend-otp", hrResendOtp);
 router.post("/auth/admin-login", hrAdminLogin);
 router.post("/auth/logout", hrLogout);
 
@@ -36,6 +39,7 @@ router.use(hrAuthMiddleware);
 
 router.get("/auth/me", hrMe);
 router.put("/auth/password", admin, hrChangePassword);
+router.put("/auth/admin-phone", admin, hrSetAdminPhone);
 
 router.get("/settings", getHrSettings);
 router.put("/settings", admin, updateHrSettings);
@@ -60,6 +64,17 @@ router.put("/salary", admin, saveHrSalary);
 // ---------- home page & self service ----------
 
 router.get("/directory", getDirectory);
+router.get("/crm/team", getCrmTeam);
+
+// ---------- CRM data (leads, properties, visits ...) ----------
+router.get("/crm/data", requireCrm, getCrmData);
+router.post("/crm/import", requireCrm, importCrmData);
+router.put("/crm/company", requireCrm, updateCrmCompany);
+router.post("/crm/data/:col", requireCrm, createCrmRecords);
+router.patch("/crm/data/:col", requireCrm, updateCrmRecords);
+router.patch("/crm/data/:col/:id", requireCrm, updateCrmRecords);
+router.delete("/crm/data/:col", requireCrm, deleteCrmRecords);
+router.delete("/crm/data/:col/:id", requireCrm, deleteCrmRecords);
 
 router.get("/requests", listRequests);
 router.post("/requests", createRequest);

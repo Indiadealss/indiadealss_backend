@@ -6,6 +6,15 @@ import User from "../models/User.js";
 import { sendHompagemessage, sendmessage } from "../utils/otpHelper.js";
 import { addData, addHomeData, sendLeadMail, sendMailmessage } from "../utils/sendMail.js";
 import notificationsMaping from "../models/Notifications.js";
+import { addWebsiteLeadToCrm } from "../utils/crmLeads.js";
+
+// Every website enquiry also lands in the IndiaDeals CRM as a new, unassigned lead
+const toCrm = (lead, property, leadData = {}) => addWebsiteLeadToCrm({
+    name: lead.Name, phone: lead.PhoneNumber, email: leadData.email || leadData.Email,
+    project: property?.projectname, message: lead.message || leadData.Requirements, purpose: lead.purpose,
+    city: property?.location?.City, address: property?.location?.Address, websiteLeadId: lead._id,
+    page: property?.npxid ? `npxid ${property.npxid}` : property?.spid ? `spid ${property.spid}` : "",
+});
 
 const notifyNewLead = async ({ recipient, leadName, propertyLabel, leadId }) => {
     if (!recipient) return;
@@ -84,6 +93,8 @@ export const genrateLead = async (req, res) => {
         });
          console.log("Lead:", lead);
 
+        await toCrm(lead, property, leadData);
+
         await notifyNewLead({
             recipient: projectOwner,
             leadName: Name,
@@ -156,6 +167,8 @@ export const genrateLeadMessage = async (req, res) => {
         await lead.save();
 
          console.log("Lead:", lead._id);
+
+        await toCrm(lead, property, leadData);
 
         await notifyNewLead({
             recipient: projectOwner,

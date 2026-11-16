@@ -12,6 +12,8 @@ const hrUserSchema = new mongoose.Schema({
     employeeCode:{ type:String, required:true, unique:true, trim:true, uppercase:true },
     password:{ type:String, required:true },
     role:{ type:String, enum:["admin", "employee"], default:"employee" },
+    // admin only: mobile for the login OTP (employees use the phone on their employee record)
+    phone:{ type:String, trim:true, default:"" },
     // the employee record this login belongs to (employee logins only)
     employee:{ type:mongoose.Schema.Types.ObjectId, ref:"HrEmployee" }
 },{timestamps:true});

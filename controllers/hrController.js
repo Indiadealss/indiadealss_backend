@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import HrUser, { hrOrgUsername } from "../models/hr/HrUser.js";
-import HrEmployee from "../models/hr/HrEmployee.js";
+import HrEmployee, { CRM_ROLES } from "../models/hr/HrEmployee.js";
 import HrAttendance from "../models/hr/HrAttendance.js";
 import HrLeave, { LEAVE_TYPES, QUOTA_TYPES } from "../models/hr/HrLeave.js";
 import HrSettings from "../models/hr/HrSettings.js";
@@ -111,8 +111,9 @@ const employeeFields = (b) => {
   for (const k of ["code", "name", "fatherName", "dept", "designation", "base", "email", "phone", "pan", "uan", "esiNo"]) {
     if (b[k] !== undefined) out[k] = String(b[k]).trim();
   }
-  for (const k of ["gross", "tds", "basic"]) if (b[k] !== undefined) out[k] = Math.max(0, Number(b[k]) || 0);
-  for (const k of ["pfOn", "esiOn", "ptOn", "active"]) if (b[k] !== undefined) out[k] = !!b[k];
+  for (const k of ["gross", "tds", "basic", "target"]) if (b[k] !== undefined) out[k] = Math.max(0, Number(b[k]) || 0);
+  if (b.crmRole !== undefined && CRM_ROLES.includes(b.crmRole)) out.crmRole = b.crmRole;
+  for (const k of ["pfOn", "esiOn", "ptOn", "active", "crmAccess"]) if (b[k] !== undefined) out[k] = !!b[k];
   if (b.taxRegime !== undefined) out.taxRegime = b.taxRegime === "old" ? "old" : "new";
   if (b.shift !== undefined) out.shift = TIME_RE.test(b.shift) ? b.shift : "09:30";
   if (b.joined !== undefined) out.joined = DATE_RE.test(b.joined) ? b.joined : "";
@@ -425,7 +426,8 @@ const salaryRow = (employee, rec, defaultWeekOff) => {
     dept: employee.dept,
     basic, hra, ta, overtimeHrs, otPay,
     weekOff: rec ? rec.weekOff : defaultWeekOff,
-    revenueTarget: rec?.revenueTarget || 0,
+    // an unsaved month starts from the target set at joining
+    revenueTarget: rec ? rec.revenueTarget : employee.target || 0,
     achievement: rec?.achievement || 0,
     net: basic + hra + ta + otPay,
     saved: !!rec

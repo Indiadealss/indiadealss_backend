@@ -43,6 +43,22 @@ export const getDirectory = async (req, res) => {
   } catch (err) { serverError(res, err); }
 };
 
+// ---------- CRM team ----------
+// Employees with CRM access, as the CRM's team list. Only CRM users (and the HR admin) can read it.
+
+export const getCrmTeam = async (req, res) => {
+  try {
+    if (isEmployee(req) && !req.hrEmployee?.crmAccess) return res.status(403).json({ message: "CRM access isn't turned on for you" });
+    const list = await HrEmployee.find({ crmAccess: true }).select("code name email phone dept designation crmRole target active").sort({ name: 1 });
+    res.json({
+      team: list.map((e) => ({
+        id: String(e._id), code: e.code, name: e.name, email: e.email, phone: e.phone, dept: e.dept, designation: e.designation,
+        role: e.crmRole, target: e.target || 0, active: e.active
+      }))
+    });
+  } catch (err) { serverError(res, err); }
+};
+
 // ---------- attendance requests ----------
 
 export const listRequests = async (req, res) => {

@@ -10,6 +10,9 @@ const structureSchema = new mongoose.Schema(
 );
 export { structureSchema };
 
+// same roles as the CRM's team page
+export const CRM_ROLES = ["Admin", "Sales Manager", "Sales Agent", "Telecaller"];
+
 const hrEmployeeSchema = new mongoose.Schema({
     code:{ type:String, required:true, unique:true, trim:true },
     name:{ type:String, required:true, trim:true },
@@ -26,6 +29,8 @@ const hrEmployeeSchema = new mongoose.Schema({
     gross:{ type:Number, min:0, default:0 },
     // monthly basic salary in rupees, the starting value for each month's salary sheet
     basic:{ type:Number, min:0, default:0 },
+    // monthly revenue target in rupees, set when the employee joins; each month's salary sheet starts from it
+    target:{ type:Number, min:0, default:0 },
     // fixed monthly TDS in rupees; 0 = work it out from the tax declaration
     tds:{ type:Number, min:0, default:0 },
     taxRegime:{ type:String, enum:["new", "old"], default:"new" },
@@ -52,6 +57,9 @@ const hrEmployeeSchema = new mongoose.Schema({
     // usual work location (one of the company sites), also the branch on payroll reports
     base:{ type:String, default:"" },
     active:{ type:Boolean, default:true },
+    // the employee's HR login also signs them in to the CRM, with this role
+    crmAccess:{ type:Boolean, default:false },
+    crmRole:{ type:String, enum:CRM_ROLES, default:"Sales Agent" },
     // example records created by "Load sample company"
     sample:{ type:Boolean, default:false }
 },{timestamps:true});

@@ -23,6 +23,12 @@ export const sendOtpSms = async (mobile) => {
 
     const otp = Math.floor(1000 + Math.random() * 9000);
     otpStore[mobile] = otp;
+    await sendOtpText(mobile, otp);
+    return otp;
+};
+
+// Sends an OTP the caller made, with the same DLT template (also used by the HR / CRM login)
+export const sendOtpText = async (mobile, otp) => {
 try {
    const message = `Your verification OTP is ${otp}. Please do not share it with anyone.
 
