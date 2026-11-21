@@ -278,26 +278,71 @@ export const getHrAttendance = async (req, res) => {
 };
 
 // Punch in, or punch out if already in. Time comes from the server clock.
+// Browser GPS sent with a punch: { lat, lng, acc }
+const readGeo = (g) => {
+  const lat = Number(g?.lat), lng = Number(g?.lng), acc = Number(g?.acc);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat: +lat.toFixed(6), lng: +lng.toFixed(6), ...(Number.isFinite(acc) && acc >= 0 ? { acc: Math.round(acc) } : {}) };
+};
+
+// Street address for a GPS point (OpenStreetMap). Best effort: gives up after a few seconds, never throws.
+const lookupAddress = async ({ lat, lng }) => {
+  if (process.env.HR_PUNCH_ADDRESS === "off") return "";
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${lat}&lon=${lng}`;
+    const r = await fetch(url, { headers: { "User-Agent": "IndiaDealsHR/1.0", "Accept-Language": "en" }, signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return "";
+    return String((await r.json()).display_name || "").slice(0, 300);
+  } catch {
+    return "";
+  }
+};
+
+// Employees punch for themselves and must share their location (HR_PUNCH_GEO=optional lets them punch without it).
+// The HR admin can punch on someone's behalf from the dashboard; that punch has no location.
 export const punchHr = async (req, res) => {
   try {
     const { loc } = req.body || {};
-    // employees can only punch for themselves
-    const emp = isEmployee(req) ? String(ownId(req)) : req.body?.emp;
+    const self = isEmployee(req);
+    const emp = self ? String(ownId(req)) : req.body?.emp;
     if (!isId(emp)) return res.status(400).json({ message: "Pick an employee" });
     const employee = await HrEmployee.findById(emp);
     if (!employee || !employee.active) return res.status(404).json({ message: "Employee not found" });
 
+    const geo = readGeo(req.body?.geo);
+    if (self && !geo && process.env.HR_PUNCH_GEO !== "optional") {
+      return res.status(400).json({ message: "Turn on location and allow it for this site to punch in or out" });
+    }
+
     const { date, time } = istNow();
     const rec = (await HrAttendance.findOne({ emp, date })) || new HrAttendance({ emp, date });
+    let field;
     if (!rec.in) {
       const settings = await getSettings();
       rec.in = time;
       rec.loc = settings.sites.includes(loc) ? loc : employee.base || settings.sites[0] || "";
+      field = "inGeo";
     } else if (!rec.out) {
+      // punching out before the shift is over (same rule as payroll's "early leaving") needs a reason
+      const settings = await getSettings();
+      const hm = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+      const toM = (t) => { const [h, m] = String(t).split(":").map(Number); return h * 60 + m; };
+      const shiftStart = toM(employee.shift || "09:30");
+      const shiftEnd = shiftStart + (settings.payroll?.shiftHours || 9) * 60;
+      // a shift that runs past midnight: after midnight counts as the next day's clock
+      const nowM = toM(time) + (shiftEnd > 1440 && toM(time) < shiftStart ? 1440 : 0);
+      const early = nowM < shiftEnd - (settings.graceMins || 0);
+      const reason = String(req.body?.reason || "").trim().slice(0, 500);
+      if (early && self && reason.length < 5) {
+        return res.status(400).json({ code: "EARLY_REASON", shiftEnd: hm(shiftEnd), message: `Your shift ends at ${hm(shiftEnd)}. Give a reason to punch out early.` });
+      }
       rec.out = time;
+      if (early && reason) rec.earlyReason = reason;
+      field = "outGeo";
     } else {
       return res.status(409).json({ message: `${employee.name} has already punched out today` });
     }
+    if (geo) rec[field] = { ...geo, at: time, address: await lookupAddress(geo) };
     await rec.save();
     res.json({ attendance: rec });
   } catch (err) { serverError(res, err); }

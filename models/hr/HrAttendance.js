@@ -2,6 +2,16 @@ import mongoose from "mongoose";
 import hrDB from "../../config/hrDb.js";
 import { hrToJSON } from "./toJSON.js";
 
+// Where the phone / laptop was when the employee punched (browser GPS). address is looked up afterwards, best effort.
+const geoSchema = new mongoose.Schema({
+    lat:{ type:Number, required:true },
+    lng:{ type:Number, required:true },
+    // metres, as reported by the device
+    acc:{ type:Number },
+    address:{ type:String, default:"" },
+    at:{ type:String },
+},{ _id:false });
+
 // One document per employee per day.
 // `in` / `out` come from the punch clock; `ov` is a manual correction by HR on the muster roll.
 const hrAttendanceSchema = new mongoose.Schema({
@@ -11,6 +21,10 @@ const hrAttendanceSchema = new mongoose.Schema({
     in:{ type:String },
     out:{ type:String },
     loc:{ type:String },
+    inGeo:{ type:geoSchema },
+    outGeo:{ type:geoSchema },
+    // why the employee punched out before their shift ended
+    earlyReason:{ type:String, trim:true, maxlength:500 },
     ov:{ type:String, enum:["P","HD","A"] },
     // set by an approved request: reg = regularized punches, od = outdoor duty, wfh = work from home
     src:{ type:String, enum:["reg","od","wfh"] },
