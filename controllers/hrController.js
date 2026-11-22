@@ -95,10 +95,26 @@ export const updateHrSettings = async (req, res) => {
         if (b.quota[t] !== undefined) update["quota." + t] = Math.max(0, Number(b.quota[t]) || 0);
       }
     }
+    // A work location edited in place (same line, new text) is a rename: move employees' base
+    // and past punches to the new name, e.g. "Head office, Gurugram" -> "Head office, Greater Noida"
+    const renames = [];
+    if (update.sites) {
+      const before = (await getSettings()).sites || [];
+      if (before.length === update.sites.length) {
+        before.forEach((from, i) => {
+          const to = update.sites[i];
+          if (from !== to && !update.sites.includes(from) && !before.includes(to)) renames.push({ from, to });
+        });
+      }
+    }
     const settings = await HrSettings.findOneAndUpdate(
       { key: "company" }, { $set: update }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
-    res.json({ settings });
+    for (const { from, to } of renames) {
+      await HrEmployee.updateMany({ base: from }, { $set: { base: to } });
+      await HrAttendance.updateMany({ loc: from }, { $set: { loc: to } });
+    }
+    res.json({ settings, renamed: renames });
   } catch (err) { serverError(res, err); }
 };
 

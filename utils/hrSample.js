@@ -23,7 +23,7 @@ export default function makeHrSample(todayISO) {
   const year = todayISO.slice(0, 4);
   const settings = {
     company: "IndiaDeals Realty (sample)",
-    sites: ["Head office, Gurugram", "Sector 89 project site", "Dwarka Expressway site", "Sohna Road site"],
+    sites: ["Head office, Greater Noida", "Noida Extension site", "Yamuna Expressway site", "Sector 150 Noida site"],
     weeklyOff: [0, 6],
     holidays: [
       { date: year + "-08-15", name: "Independence Day" },
@@ -38,14 +38,14 @@ export default function makeHrSample(todayISO) {
     sample: true
   };
   const people = [
-    ["ID101", "Vikram Malhotra", "Sales", "Sales Manager", 95000, "10:00", "2021-06-14", 5200, "Head office, Gurugram"],
-    ["ID102", "Neha Kapoor", "Sales", "Senior Relationship Manager", 62000, "10:00", "2022-08-01", 1800, "Sector 89 project site"],
-    ["ID103", "Arjun Rathi", "Sales", "Site Executive", 32000, "09:30", "2024-02-12", 0, "Dwarka Expressway site"],
-    ["ID104", "Pooja Bhatia", "Pre-sales", "Telecaller", 18500, "09:30", "2025-01-20", 0, "Head office, Gurugram"],
-    ["ID105", "Rahul Chauhan", "Channel Partners", "CP Manager", 58000, "10:00", "2022-11-07", 1200, "Sohna Road site"],
-    ["ID106", "Simran Kaur", "CRM", "Customer Relations Executive", 34000, "09:30", "2023-09-04", 0, "Head office, Gurugram"],
-    ["ID107", "Deepak Saini", "Sales", "Site Executive", 28000, "09:30", "2024-07-15", 0, "Sector 89 project site"],
-    ["ID108", "Anjali Mehra", "Accounts", "Accounts Executive", 40000, "09:30", "2023-03-27", 0, "Head office, Gurugram"]
+    ["ID101", "Vikram Malhotra", "Sales", "Sales Manager", 95000, "10:00", "2021-06-14", 5200, "Head office, Greater Noida"],
+    ["ID102", "Neha Kapoor", "Sales", "Senior Relationship Manager", 62000, "10:00", "2022-08-01", 1800, "Noida Extension site"],
+    ["ID103", "Arjun Rathi", "Sales", "Site Executive", 32000, "09:30", "2024-02-12", 0, "Yamuna Expressway site"],
+    ["ID104", "Pooja Bhatia", "Pre-sales", "Telecaller", 18500, "09:30", "2025-01-20", 0, "Head office, Greater Noida"],
+    ["ID105", "Rahul Chauhan", "Channel Partners", "CP Manager", 58000, "10:00", "2022-11-07", 1200, "Sector 150 Noida site"],
+    ["ID106", "Simran Kaur", "CRM", "Customer Relations Executive", 34000, "09:30", "2023-09-04", 0, "Head office, Greater Noida"],
+    ["ID107", "Deepak Saini", "Sales", "Site Executive", 28000, "09:30", "2024-07-15", 0, "Noida Extension site"],
+    ["ID108", "Anjali Mehra", "Accounts", "Accounts Executive", 40000, "09:30", "2023-03-27", 0, "Head office, Greater Noida"]
   ];
   const employees = people.map((p) => ({
     code: p[0], name: p[1], dept: p[2], designation: p[3],
