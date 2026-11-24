@@ -5,3 +5,6 @@ node_modules
 utils/credentials.json
 
 .env
+
+# HR employee documents saved locally (localhost, no AWS)
+private_uploads/

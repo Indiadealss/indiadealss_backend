@@ -1,5 +1,6 @@
 import express from "express";
 import hrAuthMiddleware, { requireHrAdmin as admin } from "../middleware/hrAuthMiddleware.js";
+import { listDocuments, receiveDocument, uploadDocument, downloadDocument, removeDocument } from "../controllers/hrDocumentController.js";
 import { requireCrm, getCrmData, createCrmRecords, updateCrmRecords, deleteCrmRecords, updateCrmCompany, importCrmData } from "../controllers/hrCrmController.js";
 import { hrLogin, hrVerifyOtp, hrResendOtp, hrAdminLogin, hrMe, hrLogout, hrChangePassword, hrSetAdminPhone } from "../controllers/hrAuthController.js";
 import {
@@ -48,6 +49,12 @@ router.get("/employees", getHrEmployees);
 router.post("/employees", admin, createHrEmployee);
 router.put("/employees/:id", admin, updateHrEmployee);
 router.delete("/employees/:id", admin, deleteHrEmployee);
+
+// employee documents (admin: anyone; employee: their own, upload + view only)
+router.get("/employees/:id/documents", listDocuments);
+router.post("/employees/:id/documents", receiveDocument, uploadDocument);
+router.get("/documents/:docId/file", downloadDocument);
+router.delete("/documents/:docId", admin, removeDocument);
 
 router.get("/attendance", getHrAttendance);
 router.post("/attendance/punch", punchHr);

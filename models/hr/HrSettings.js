@@ -6,6 +6,22 @@ const hrSettingsSchema = new mongoose.Schema({
     key:{ type:String, required:true, unique:true, default:"company" },
     company:{ type:String, default:"IndiaDeals" },
     sites:{ type:[String], default:["Head office"] },
+    // dropdown choices on the employee form; HR edits them in Settings, and a new value typed on the form is added here
+    departments:{ type:[String], default:["Sales", "Pre-sales", "Marketing", "CRM", "Channel Partners", "Accounts", "HR & Admin", "Operations", "IT"] },
+    // old flat list (before designations belonged to a department); still read, merged in as "all departments"
+    designations:{ type:[String], default:[] },
+    // each designation belongs to a department; dept "" = offered for every department
+    designationMap:{ type:[{ _id:false, name:{ type:String, required:true }, dept:{ type:String, default:"" } }], default:() => [
+        ...["Sales Manager", "Senior Relationship Manager", "Relationship Manager", "Site Executive"].map((name) => ({ name, dept:"Sales" })),
+        ...["Telecaller", "Pre-sales Executive"].map((name) => ({ name, dept:"Pre-sales" })),
+        ...["Marketing Manager", "Digital Marketing Executive"].map((name) => ({ name, dept:"Marketing" })),
+        ...["CRM Manager", "Customer Relations Executive"].map((name) => ({ name, dept:"CRM" })),
+        ...["CP Manager", "CP Executive"].map((name) => ({ name, dept:"Channel Partners" })),
+        ...["Accounts Manager", "Accounts Executive"].map((name) => ({ name, dept:"Accounts" })),
+        ...["HR Manager", "HR Executive", "Office Administrator"].map((name) => ({ name, dept:"HR & Admin" })),
+        ...["Operations Manager", "Operations Executive"].map((name) => ({ name, dept:"Operations" })),
+        ...["IT Manager", "Software Developer"].map((name) => ({ name, dept:"IT" })),
+    ] },
     // 0 = Sunday ... 6 = Saturday
     weeklyOff:{ type:[Number], default:[0] },
     holidays:{ type:[{ _id:false, date:String, name:String }], default:[] },

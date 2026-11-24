@@ -11,6 +11,7 @@ import { HrRequest, HrPost } from "../models/hr/HrPortal.js";
 import { monthLocked, rangeLocked } from "./hrPayrollController.js";
 import { cleanStructure, structureTotal } from "../utils/hrPayroll.js";
 import makeHrSample from "../utils/hrSample.js";
+import { deleteEmployeeDocuments } from "./hrDocumentController.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
@@ -36,6 +37,16 @@ const ownId = (req) => req.hrEmployee?._id;
 
 const getSettings = async () => (await HrSettings.findOne({ key: "company" })) || new HrSettings();
 
+// Settings as the app sees them: designations from the old flat list join the map as "all departments"
+const withDesignations = (doc) => {
+  const s = doc.toJSON ? doc.toJSON() : doc;
+  const map = [...(s.designationMap || [])];
+  for (const name of s.designations || []) {
+    if (!map.some((d) => d.name.toLowerCase() === name.toLowerCase())) map.push({ name, dept: "" });
+  }
+  return { ...s, departments: s.departments || [], designationMap: map };
+};
+
 // Working days between two dates, skipping weekly offs and holidays
 const countLeaveDays = (from, to, settings) => {
   const hol = new Set(settings.holidays.map((h) => h.date));
@@ -51,8 +62,9 @@ const countLeaveDays = (from, to, settings) => {
 
 export const getHrSettings = async (req, res) => {
   try {
-    const settings = await HrSettings.findOne({ key: "company" });
-    res.json({ settings });
+    // before HR first saves settings, send the defaults (incl. department / designation lists)
+    const settings = (await HrSettings.findOne({ key: "company" })) || new HrSettings();
+    res.json({ settings: withDesignations(settings) });
   } catch (err) { serverError(res, err); }
 };
 
@@ -62,6 +74,15 @@ export const updateHrSettings = async (req, res) => {
     const update = {};
     if (b.company !== undefined) update.company = String(b.company).trim() || "IndiaDeals";
     if (Array.isArray(b.sites)) update.sites = b.sites.map((s) => String(s).trim()).filter(Boolean);
+    if (Array.isArray(b.departments)) update.departments = [...new Set(b.departments.map((s) => String(s).trim().slice(0, 80)).filter(Boolean))];
+    if (Array.isArray(b.designationMap)) {
+      const seen = new Set();
+      update.designationMap = b.designationMap
+        .map((d) => ({ name: String(d?.name || "").trim().slice(0, 80), dept: String(d?.dept || "").trim().slice(0, 80) }))
+        .filter((d) => d.name && !seen.has(`${d.dept}\u0000${d.name.toLowerCase()}`) && seen.add(`${d.dept}\u0000${d.name.toLowerCase()}`));
+      // the old flat list is now part of the map
+      update.designations = [];
+    }
     if (Array.isArray(b.weeklyOff)) update.weeklyOff = b.weeklyOff.map(Number).filter((n) => n >= 0 && n <= 6);
     if (Array.isArray(b.holidays)) {
       update.holidays = b.holidays
@@ -114,13 +135,29 @@ export const updateHrSettings = async (req, res) => {
       await HrEmployee.updateMany({ base: from }, { $set: { base: to } });
       await HrAttendance.updateMany({ loc: from }, { $set: { loc: to } });
     }
-    res.json({ settings, renamed: renames });
+    res.json({ settings: withDesignations(settings), renamed: renames });
   } catch (err) { serverError(res, err); }
 };
 
 // ---------- employees ----------
 
 const BANK_MODES = ["NEFT", "RTGS", "IMPS", "Cheque", "Cash"];
+
+// A department / designation typed on the employee form joins the Settings dropdown lists;
+// the designation is filed under the employee's department
+const rememberChoices = async ({ dept, designation }) => {
+  if (!dept && !designation) return;
+  // make sure the settings document exists with its default lists before adding to them
+  if (!(await HrSettings.exists({ key: "company" }))) await new HrSettings().save();
+  const s = withDesignations(await HrSettings.findOne({ key: "company" }));
+  const update = {};
+  if (dept && !s.departments.includes(dept)) update.departments = [...s.departments, dept];
+  if (designation && !s.designationMap.some((d) => d.name.toLowerCase() === designation.toLowerCase() && (d.dept === dept || d.dept === ""))) {
+    update.designationMap = [...s.designationMap, { name: designation, dept: dept || "" }];
+    update.designations = [];
+  }
+  if (Object.keys(update).length) await HrSettings.updateOne({ key: "company" }, { $set: update });
+};
 
 const employeeFields = (b) => {
   const out = {};
@@ -219,6 +256,7 @@ export const createHrEmployee = async (req, res) => {
     if (b.code && await codeTakenByLogin(b.code)) return res.status(409).json({ message: CODE_TAKEN });
 
     const employee = await HrEmployee.create(employeeFields(b));
+    await rememberChoices(employee);
     await syncEmployeeLogin(employee, password);
     res.status(201).json({ employee: (await withLoginFlag([employee]))[0] });
   } catch (err) { if (!duplicateCode(res, err)) serverError(res, err); }
@@ -244,6 +282,7 @@ export const updateHrEmployee = async (req, res) => {
 
     const employee = await HrEmployee.findByIdAndUpdate(req.params.id, { $set: fields }, { new: true, runValidators: true });
     if (!employee) return res.status(404).json({ message: "Employee not found" });
+    await rememberChoices(employee);
     await syncEmployeeLogin(employee, password);
     res.json({ employee: (await withLoginFlag([employee]))[0] });
   } catch (err) { if (!duplicateCode(res, err)) serverError(res, err); }
@@ -272,7 +311,8 @@ export const deleteHrEmployee = async (req, res) => {
       HrSettlement.deleteMany(emp),
       HrRequest.deleteMany(emp),
       HrPost.deleteMany({ to: employee._id }),
-      HrUser.deleteMany({ employee: employee._id })
+      HrUser.deleteMany({ employee: employee._id }),
+      deleteEmployeeDocuments(employee._id)
     ]);
     res.json({ message: "Employee deleted" });
   } catch (err) { serverError(res, err); }
