@@ -50,6 +50,10 @@ const hrEmployeeSchema = new mongoose.Schema({
     },
     // shift start, "HH:MM"
     shift:{ type:String, default:"09:30", match:/^\d{2}:\d{2}$/ },
+    // shift end, "HH:MM"; "" = start + the full-day hours in Settings
+    shiftEnd:{ type:String, default:"", match:/^(\d{2}:\d{2})?$/ },
+    // the Settings shift this employee is on ("" = custom timings); its timings are copied into shift / shiftEnd
+    shiftName:{ type:String, trim:true, default:"" },
     // date of joining, "YYYY-MM-DD"
     joined:{ type:String, default:"" },
     // set by the full & final settlement, "YYYY-MM-DD"

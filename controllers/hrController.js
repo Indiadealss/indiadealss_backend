@@ -9,7 +9,7 @@ import HrSalary from "../models/hr/HrSalary.js";
 import { HrPayslip, HrRevision, HrAdjustment, HrLoan, HrTaxDeclaration, HrSettlement } from "../models/hr/HrPayroll.js";
 import { HrRequest, HrPost } from "../models/hr/HrPortal.js";
 import { monthLocked, rangeLocked } from "./hrPayrollController.js";
-import { cleanStructure, structureTotal } from "../utils/hrPayroll.js";
+import { cleanStructure, shiftWindow, structureTotal } from "../utils/hrPayroll.js";
 import makeHrSample from "../utils/hrSample.js";
 import { deleteEmployeeDocuments } from "./hrDocumentController.js";
 
@@ -83,6 +83,13 @@ export const updateHrSettings = async (req, res) => {
       // the old flat list is now part of the map
       update.designations = [];
     }
+    if (Array.isArray(b.shifts)) {
+      const seen = new Set();
+      update.shifts = b.shifts
+        .map((s) => ({ name: String(s?.name || "").trim().slice(0, 60), start: String(s?.start || ""), end: String(s?.end || "") }))
+        .filter((s) => s.name && TIME_RE.test(s.start) && TIME_RE.test(s.end) && s.start !== s.end
+          && !seen.has(s.name.toLowerCase()) && seen.add(s.name.toLowerCase()));
+    }
     if (Array.isArray(b.weeklyOff)) update.weeklyOff = b.weeklyOff.map(Number).filter((n) => n >= 0 && n <= 6);
     if (Array.isArray(b.holidays)) {
       update.holidays = b.holidays
@@ -119,6 +126,17 @@ export const updateHrSettings = async (req, res) => {
     // A work location edited in place (same line, new text) is a rename: move employees' base
     // and past punches to the new name, e.g. "Head office, Gurugram" -> "Head office, Greater Noida"
     const renames = [];
+    // A shift edited in place (same position) is renamed / re-timed for everyone on it
+    const shiftMoves = [];
+    if (update.shifts) {
+      const before = (await getSettings()).shifts || [];
+      if (before.length === update.shifts.length) {
+        before.forEach((from, i) => {
+          const to = update.shifts[i];
+          if (from.name !== to.name && !update.shifts.some((s) => s.name === from.name)) shiftMoves.push({ from: from.name, to });
+        });
+      }
+    }
     if (update.sites) {
       const before = (await getSettings()).sites || [];
       if (before.length === update.sites.length) {
@@ -135,7 +153,20 @@ export const updateHrSettings = async (req, res) => {
       await HrEmployee.updateMany({ base: from }, { $set: { base: to } });
       await HrAttendance.updateMany({ loc: from }, { $set: { loc: to } });
     }
-    res.json({ settings: withDesignations(settings), renamed: renames });
+    // employees on a shift take its current timings (and its new name after a rename)
+    let shiftUpdated = 0;
+    for (const { from, to } of shiftMoves) {
+      shiftUpdated += (await HrEmployee.updateMany({ shiftName: from }, { $set: { shiftName: to.name, shift: to.start, shiftEnd: to.end } })).modifiedCount;
+    }
+    if (update.shifts) {
+      for (const s of update.shifts) {
+        shiftUpdated += (await HrEmployee.updateMany(
+          { shiftName: s.name, $or: [{ shift: { $ne: s.start } }, { shiftEnd: { $ne: s.end } }] },
+          { $set: { shift: s.start, shiftEnd: s.end } }
+        )).modifiedCount;
+      }
+    }
+    res.json({ settings: withDesignations(settings), renamed: renames, shiftUpdated });
   } catch (err) { serverError(res, err); }
 };
 
@@ -169,6 +200,8 @@ const employeeFields = (b) => {
   for (const k of ["pfOn", "esiOn", "ptOn", "active", "crmAccess"]) if (b[k] !== undefined) out[k] = !!b[k];
   if (b.taxRegime !== undefined) out.taxRegime = b.taxRegime === "old" ? "old" : "new";
   if (b.shift !== undefined) out.shift = TIME_RE.test(b.shift) ? b.shift : "09:30";
+  if (b.shiftEnd !== undefined) out.shiftEnd = TIME_RE.test(b.shiftEnd) && b.shiftEnd !== out.shift ? b.shiftEnd : "";
+  if (b.shiftName !== undefined) out.shiftName = String(b.shiftName).trim().slice(0, 60);
   if (b.joined !== undefined) out.joined = DATE_RE.test(b.joined) ? b.joined : "";
   if (b.dob !== undefined) out.dob = DATE_RE.test(b.dob) ? b.dob : "";
   if (b.bank && typeof b.bank === "object") {
@@ -383,8 +416,7 @@ export const punchHr = async (req, res) => {
       const settings = await getSettings();
       const hm = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
       const toM = (t) => { const [h, m] = String(t).split(":").map(Number); return h * 60 + m; };
-      const shiftStart = toM(employee.shift || "09:30");
-      const shiftEnd = shiftStart + (settings.payroll?.shiftHours || 9) * 60;
+      const { start: shiftStart, end: shiftEnd } = shiftWindow(employee, settings);
       // a shift that runs past midnight: after midnight counts as the next day's clock
       const nowM = toM(time) + (shiftEnd > 1440 && toM(time) < shiftStart ? 1440 : 0);
       const early = nowM < shiftEnd - (settings.graceMins || 0);

@@ -22,6 +22,9 @@ const hrSettingsSchema = new mongoose.Schema({
         ...["Operations Manager", "Operations Executive"].map((name) => ({ name, dept:"Operations" })),
         ...["IT Manager", "Software Developer"].map((name) => ({ name, dept:"IT" })),
     ] },
+    // named shifts HR picks from on the employee form, e.g. { name:"Shift A", start:"10:30", end:"19:00" }.
+    // An end earlier than the start runs past midnight.
+    shifts:{ type:[{ _id:false, name:{ type:String, required:true }, start:{ type:String, required:true, match:/^\d{2}:\d{2}$/ }, end:{ type:String, required:true, match:/^\d{2}:\d{2}$/ } }], default:[] },
     // 0 = Sunday ... 6 = Saturday
     weeklyOff:{ type:[Number], default:[0] },
     holidays:{ type:[{ _id:false, date:String, name:String }], default:[] },

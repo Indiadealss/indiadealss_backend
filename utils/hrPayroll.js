@@ -44,6 +44,18 @@ const toMins = (hm) => {
   return h * 60 + m;
 };
 
+// An employee's shift in minutes from midnight: { start, end, len }. Without an end time the shift
+// lasts the full-day hours in Settings. An end before the start runs past midnight (end > 1440).
+export const shiftWindow = (employee, settings) => {
+  const start = toMins(employee?.shift || "09:30");
+  let len = (settings?.payroll?.shiftHours || 9) * 60;
+  if (/^\d{2}:\d{2}$/.test(employee?.shiftEnd || "")) {
+    len = toMins(employee.shiftEnd) - start;
+    if (len <= 0) len += 1440;
+  }
+  return { start, end: start + len, len };
+};
+
 // ---------- salary structure ----------
 
 export const structureTotal = (s) => STRUCTURE_KEYS.reduce((a, k) => a + (Number(s?.[k]) || 0), 0);
@@ -80,10 +92,8 @@ export const effectiveStructure = (structure, gross, split) =>
 // Days still to come in the month are counted as paid ("projected").
 
 export function monthAttendance({ month, employee, records, leaves, settings, today }) {
-  const pay = settings.payroll;
   const hol = new Map(settings.holidays.map((h) => [h.date, h.name]));
-  const fullDay = pay.shiftHours * 60;
-  const shiftStart = toMins(employee.shift || "09:30");
+  const { start: shiftStart, len: fullDay } = shiftWindow(employee, settings);
   const a = { P: 0, HD: 0, A: 0, L: 0, LWP: 0, WO: 0, H: 0, NA: 0, projected: 0, late: 0, early: 0, noPunchOut: 0, otMins: 0 };
 
   for (const date of monthDates(month)) {
