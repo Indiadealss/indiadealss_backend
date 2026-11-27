@@ -6,7 +6,7 @@ import { hrLogin, hrVerifyOtp, hrResendOtp, hrAdminLogin, hrMe, hrLogout, hrChan
 import {
   getHrSettings, updateHrSettings,
   getHrEmployees, createHrEmployee, updateHrEmployee, deleteHrEmployee,
-  getHrAttendance, punchHr, overrideHrAttendance,
+  getHrAttendance, punchHr, overrideHrAttendance, bulkOverrideHrAttendance,
   getHrLeaves, createHrLeave, updateHrLeaveStatus, deleteHrLeave,
   getHrSalary, saveHrSalary,
   loadHrSample, clearHrSample,
@@ -59,6 +59,7 @@ router.delete("/documents/:docId", admin, removeDocument);
 router.get("/attendance", getHrAttendance);
 router.post("/attendance/punch", punchHr);
 router.put("/attendance/override", admin, overrideHrAttendance);
+router.put("/attendance/bulk", admin, bulkOverrideHrAttendance);
 
 router.get("/leaves", getHrLeaves);
 router.post("/leaves", createHrLeave);

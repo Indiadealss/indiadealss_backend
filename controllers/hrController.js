@@ -463,6 +463,43 @@ export const overrideHrAttendance = async (req, res) => {
   } catch (err) { serverError(res, err); }
 };
 
+// HR fills many days at once from the muster roll: entries = [{ emp, date }], all set to the same
+// ov ("P" | "HD" | "A"), or ov null to clear the corrections. Which days to fill (offs, leave,
+// punched days) is decided on the page; days in a locked payroll month are skipped and reported.
+export const bulkOverrideHrAttendance = async (req, res) => {
+  try {
+    const { entries, ov } = req.body || {};
+    if (!Array.isArray(entries) || !entries.length) return res.status(400).json({ message: "Pick at least one employee and day" });
+    if (entries.length > 10000) return res.status(400).json({ message: "Too many days at once. Fill a shorter date range." });
+    if (ov != null && !["P", "HD", "A"].includes(ov)) return res.status(400).json({ message: "Invalid status" });
+    const today = istNow().date;
+    const seen = new Set();
+    const list = entries
+      .map((e) => ({ emp: String(e?.emp || ""), date: String(e?.date || "") }))
+      .filter((e) => isId(e.emp) && DATE_RE.test(e.date) && e.date <= today && !seen.has(`${e.emp}|${e.date}`) && seen.add(`${e.emp}|${e.date}`));
+    if (!list.length) return res.status(400).json({ message: "No valid days to fill (future days can't be marked)" });
+
+    const known = new Set((await HrEmployee.find({ _id: { $in: [...new Set(list.map((e) => e.emp))] } }).select("_id")).map((e) => String(e._id)));
+    const locked = [];
+    for (const m of new Set(list.map((e) => e.date.slice(0, 7)))) if (await monthLocked(m)) locked.push(m);
+    const todo = list.filter((e) => known.has(e.emp) && !locked.includes(e.date.slice(0, 7)));
+
+    if (todo.length) {
+      if (ov == null) {
+        await HrAttendance.bulkWrite(todo.map(({ emp, date }) => ({ updateOne: { filter: { emp, date }, update: { $unset: { ov: "" } } } })));
+        // a correction with no punches behind it leaves nothing to keep
+        await HrAttendance.deleteMany({ $or: todo.map(({ emp, date }) => ({ emp, date })), in: { $exists: false }, out: { $exists: false }, ov: { $exists: false } });
+      } else {
+        await HrAttendance.bulkWrite(todo.map(({ emp, date }) => ({
+          updateOne: { filter: { emp, date }, update: { $set: { ov }, $setOnInsert: { emp, date } }, upsert: true }
+        })));
+      }
+    }
+    const attendance = todo.length ? await HrAttendance.find({ $or: todo.map(({ emp, date }) => ({ emp, date })) }) : [];
+    res.json({ updated: todo.length, lockedMonths: locked, attendance, filled: todo });
+  } catch (err) { serverError(res, err); }
+};
+
 // ---------- leave ----------
 
 const PAYROLL_LOCKED = "Payroll for that month is approved and locked. Unlock it from the Payroll page first.";
