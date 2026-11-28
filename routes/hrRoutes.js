@@ -2,6 +2,7 @@ import express from "express";
 import hrAuthMiddleware, { requireHrAdmin as admin } from "../middleware/hrAuthMiddleware.js";
 import { listDocuments, receiveDocument, uploadDocument, downloadDocument, removeDocument } from "../controllers/hrDocumentController.js";
 import { requireCrm, getCrmData, createCrmRecords, updateCrmRecords, deleteCrmRecords, updateCrmCompany, importCrmData } from "../controllers/hrCrmController.js";
+import { listBookings, createBooking, updateBooking, deleteBooking } from "../controllers/hrBookingController.js";
 import { hrLogin, hrVerifyOtp, hrResendOtp, hrAdminLogin, hrMe, hrLogout, hrChangePassword, hrSetAdminPhone } from "../controllers/hrAuthController.js";
 import {
   getHrSettings, updateHrSettings,
@@ -116,6 +117,11 @@ router.delete("/revisions/:rid", admin, deleteRevision);
 router.get("/adjustments", admin, listAdjustments);
 router.post("/adjustments", admin, createAdjustment);
 router.delete("/adjustments/:id", admin, deleteAdjustment);
+
+router.get("/bookings", admin, listBookings);
+router.post("/bookings", admin, createBooking);
+router.put("/bookings/:id", admin, updateBooking);
+router.delete("/bookings/:id", admin, deleteBooking);
 
 router.get("/loans", listLoans);
 router.post("/loans", createLoan);

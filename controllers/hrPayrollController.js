@@ -3,6 +3,7 @@ import HrEmployee from "../models/hr/HrEmployee.js";
 import HrAttendance from "../models/hr/HrAttendance.js";
 import HrLeave from "../models/hr/HrLeave.js";
 import HrSettings from "../models/hr/HrSettings.js";
+import HrBooking from "../models/hr/HrBooking.js";
 import {
   HrPayroll, HrPayslip, HrRevision, HrAdjustment, ADJUSTMENT_TYPES, HrLoan,
   HrTaxDeclaration, HrStatutoryPayment, HrSettlement
@@ -475,6 +476,8 @@ export const deleteAdjustment = async (req, res) => {
     if (!adj) return res.status(404).json({ message: "Not found" });
     if (await monthLocked(adj.month)) return res.status(409).json({ message: LOCKED(adj.month) });
     await adj.deleteOne();
+    // an incentive sent from a booking: the booking is no longer paid with salary
+    await HrBooking.updateMany({ adjustment: adj._id }, { $set: { payMonth: "" }, $unset: { adjustment: "" } });
     res.json({ message: "Removed" });
   } catch (err) { serverError(res, err); }
 };

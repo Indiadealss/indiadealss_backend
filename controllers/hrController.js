@@ -5,6 +5,7 @@ import HrEmployee, { CRM_ROLES } from "../models/hr/HrEmployee.js";
 import HrAttendance from "../models/hr/HrAttendance.js";
 import HrLeave, { LEAVE_TYPES, QUOTA_TYPES } from "../models/hr/HrLeave.js";
 import HrSettings from "../models/hr/HrSettings.js";
+import HrBooking from "../models/hr/HrBooking.js";
 import HrSalary from "../models/hr/HrSalary.js";
 import { HrPayslip, HrRevision, HrAdjustment, HrLoan, HrTaxDeclaration, HrSettlement } from "../models/hr/HrPayroll.js";
 import { HrRequest, HrPost } from "../models/hr/HrPortal.js";
@@ -327,6 +328,10 @@ export const deleteHrEmployee = async (req, res) => {
     // salary that has been approved or paid is a financial record and must stay
     if (await HrPayslip.exists({ emp: req.params.id, status: { $in: ["approved", "paid"] } }) || await HrSettlement.exists({ emp: req.params.id, status: { $ne: "draft" } })) {
       return res.status(409).json({ message: "This employee has processed payroll, so they can't be deleted. Mark them inactive instead." });
+    }
+    // bookings are company records (client, commission) and stay with the employee who brought them
+    if (await HrBooking.exists({ emp: req.params.id })) {
+      return res.status(409).json({ message: "This employee is the source candidate on bookings, so they can't be deleted. Mark them inactive instead." });
     }
     const employee = await HrEmployee.findByIdAndDelete(req.params.id);
     if (!employee) return res.status(404).json({ message: "Employee not found" });
